@@ -37,7 +37,7 @@ function Register() {
                 onSubmit={handleRegister}
             >
 
-                <h1>🚗 RouteIQ</h1>
+                <h1>GoRoute</h1>
 
                 <h2>Create Account</h2>
 
