@@ -31,7 +31,7 @@ A premium, full-stack route optimization platform that enables users to manage c
 ## Dashboard
 
 <p align="center">
-  <img src="images/dashboard.png" width="900">
+  <img src="images/dashboard.png?v=2" width="900">
 </p>
 
 ---
@@ -39,7 +39,7 @@ A premium, full-stack route optimization platform that enables users to manage c
 ## Route Planner
 
 <p align="center">
-  <img src="images/route-planner.png" width="900">
+  <img src="images/route-planner.png?v=2" width="900">
 </p>
 
 ---
@@ -47,7 +47,7 @@ A premium, full-stack route optimization platform that enables users to manage c
 ## Cities Management
 
 <p align="center">
-  <img src="images/cities.png" width="900">
+  <img src="images/cities.png?v=2" width="900">
 </p>
 
 ---
