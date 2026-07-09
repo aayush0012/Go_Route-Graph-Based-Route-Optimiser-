@@ -50,8 +50,6 @@ A premium, full-stack route optimization platform that enables users to manage c
 
 - React.js
 - React Router
-- Axios
-- Vanilla CSS (Warm skin tone system)
 
 ### Backend
 
