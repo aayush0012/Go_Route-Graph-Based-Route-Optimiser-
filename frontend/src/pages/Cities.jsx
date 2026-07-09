@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import Layout from "../components/Layout";
+import "./Cities.css";
 
 function Cities() {
     const [cities, setCities] = useState([]);
     const [cityName, setCityName] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
     const fetchCities = async () => {
         try {
@@ -21,6 +24,7 @@ function Cities() {
     const addCity = async () => {
         if (!cityName.trim()) return;
 
+        setIsSaving(true);
         try {
             await api.post("/cities/", {
                 name: cityName,
@@ -29,7 +33,9 @@ function Cities() {
             setCityName("");
             fetchCities();
         } catch (error) {
-            alert(error.response?.data?.detail);
+            alert(error.response?.data?.detail || "Failed to add city");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -43,49 +49,62 @@ function Cities() {
     };
 
     return (
-        <div style={{ padding: "30px" }}>
-            <h1>Cities</h1>
+        <Layout>
+            <div className="cities-page">
+                <h1>Cities</h1>
+                <p className="subtitle">Keep the list of registered cities up to date.</p>
 
-            <input
-                type="text"
-                placeholder="Enter city name"
-                value={cityName}
-                onChange={(e) => setCityName(e.target.value)}
-            />
-
-            <button
-                onClick={addCity}
-                style={{ marginLeft: "10px" }}
-            >
-                Add City
-            </button>
-
-            <hr />
-
-            {cities.map((city) => (
-                <div
-                    key={city.id}
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        width: "350px",
-                        marginBottom: "10px",
-                    }}
-                >
-                    <span>
-                        {city.id}. {city.name}
-                    </span>
+                <div className="city-form">
+                    <div className="field">
+                        <label htmlFor="city-name-input">City Name</label>
+                        <input
+                            id="city-name-input"
+                            type="text"
+                            placeholder="Enter city name"
+                            value={cityName}
+                            onChange={(e) => setCityName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") addCity();
+                            }}
+                            disabled={isSaving}
+                        />
+                    </div>
 
                     <button
-                        onClick={() => deleteCity(city.id)}
+                        type="button"
+                        className="add-btn"
+                        onClick={addCity}
+                        disabled={isSaving}
                     >
-                        Delete
+                        {isSaving ? "Adding..." : "Add City"}
                     </button>
                 </div>
-            ))}
-        </div>
+
+                <div className="city-list">
+                    {cities.length === 0 ? (
+                        <p className="empty-text">No cities registered yet. Add one above.</p>
+                    ) : (
+                        cities.map((city, index) => (
+                            <div key={city.id} className="city-item">
+                                <span className="city-info">
+                                    <span className="city-index">#{index + 1}</span>
+                                    {city.name}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    className="delete-btn"
+                                    onClick={() => deleteCity(city.id)}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </Layout>
     );
 }
 
-export default Cities;
+export default Cities;

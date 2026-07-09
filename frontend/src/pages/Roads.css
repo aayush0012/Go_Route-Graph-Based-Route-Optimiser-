@@ -1,10 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap");
 
 .roads {
-    min-height: 100vh;
-    padding: 44px 48px;
-    background: #F7F3ED;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
     color: #2B2B28;
 }
 
@@ -13,21 +11,16 @@
     font-size: 28px;
     font-weight: 600;
     margin: 0 0 6px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .subtitle {
-    max-width: 700px;
-    margin: 0 auto 26px;
+    margin: 0 0 26px;
     color: #83796C;
     font-size: 14.5px;
 }
 
 .road-form {
-    max-width: 700px;
-    margin: 0 auto;
+    width: 100%;
     display: flex;
     align-items: flex-end;
     gap: 12px;
@@ -108,15 +101,15 @@
 }
 
 .error-text {
-    max-width: 700px;
-    margin: 14px auto 0;
+    width: 100%;
+    margin: 14px 0 0;
     color: #B3463A;
     font-size: 13.5px;
 }
 
 .road-list {
-    max-width: 700px;
-    margin: 24px auto 0;
+    width: 100%;
+    margin: 24px 0 0;
 }
 
 .empty-text {
@@ -175,4 +168,44 @@
         align-items: flex-start;
         gap: 8px;
     }
+}
+
+.roads-guide {
+    width: 100%;
+    margin: 0 0 24px;
+    background: #fffdfb;
+    border: 1px solid #ECE4D8;
+    border-radius: 14px;
+    padding: 20px 22px;
+    text-align: left;
+}
+
+.roads-guide h3 {
+    font-family: "Quicksand", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #4C8577;
+    margin-bottom: 8px;
+    margin-top: 0;
+}
+
+.roads-guide p {
+    font-size: 13.5px;
+    color: #83796C;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.roads-guide ul {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.roads-guide li {
+    font-size: 13.5px;
+    color: #83796C;
+    line-height: 1.5;
 }

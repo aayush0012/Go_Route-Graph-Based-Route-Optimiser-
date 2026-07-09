@@ -15,6 +15,8 @@ function RoutePlanner() {
 
     const [isSearching, setIsSearching] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const [algorithm, setAlgorithm] = useState("dijkstra");
+    const [stops, setStops] = useState([]);
 
     useEffect(() => {
         fetchCities();
@@ -42,10 +44,34 @@ function RoutePlanner() {
         setDestinationCity(sourceCity);
     };
 
+    const addStop = () => {
+        if (cities.length > 0) {
+            setStops([...stops, cities[0].id]);
+        }
+    };
+
+    const removeStop = (index) => {
+        setStops(stops.filter((_, i) => i !== index));
+    };
+
+    const handleStopChange = (index, value) => {
+        const newStops = [...stops];
+        newStops[index] = value;
+        setStops(newStops);
+    };
+
     const findRoute = async () => {
         if (sourceCity === destinationCity) {
             setErrorMsg("Pick two different cities.");
             return;
+        }
+
+        const allWaypoints = [sourceCity, ...stops, destinationCity];
+        for (let i = 0; i < allWaypoints.length - 1; i++) {
+            if (Number(allWaypoints[i]) === Number(allWaypoints[i + 1])) {
+                setErrorMsg("Consecutive stops cannot be the same city.");
+                return;
+            }
         }
 
         setIsSearching(true);
@@ -55,6 +81,8 @@ function RoutePlanner() {
             const response = await api.post("/route/", {
                 source_city_id: Number(sourceCity),
                 destination_city_id: Number(destinationCity),
+                algorithm: algorithm,
+                stops: stops.map(Number),
             });
 
             setDistance(response.data.distance);
@@ -117,16 +145,69 @@ function RoutePlanner() {
                             ))}
                         </select>
                     </div>
+
+                    {stops.map((stopId, index) => (
+                        <div key={index} className="field stop-field">
+                            <div className="stop-header">
+                                <label htmlFor={`stop-${index}`}>Stop {index + 1}</label>
+                                <button
+                                    type="button"
+                                    className="remove-stop-btn"
+                                    onClick={() => removeStop(index)}
+                                    title="Remove Stop"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <select
+                                id={`stop-${index}`}
+                                value={stopId}
+                                onChange={(e) => handleStopChange(index, e.target.value)}
+                                disabled={loadingCities}
+                            >
+                                {cities.map((city) => (
+                                    <option key={city.id} value={city.id}>
+                                        {city.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ))}
+
+                    <div className="field algorithm-field">
+                        <label htmlFor="algorithm">Routing Algorithm</label>
+                        <select
+                            id="algorithm"
+                            value={algorithm}
+                            onChange={(e) => setAlgorithm(e.target.value)}
+                            disabled={loadingCities}
+                        >
+                            <option value="dijkstra">Dijkstra (Fastest)</option>
+                            <option value="bellman_ford">Bellman-Ford (Standard)</option>
+                            <option value="a_star">A* (Heuristic)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <button
-                    type="button"
-                    className="find-btn"
-                    onClick={findRoute}
-                    disabled={loadingCities || isSearching}
-                >
-                    {isSearching ? "Looking…" : "Find the route"}
-                </button>
+                <div className="planner-actions">
+                    <button
+                        type="button"
+                        className="add-stop-btn"
+                        onClick={addStop}
+                        disabled={loadingCities}
+                    >
+                        ➕ Add Stop
+                    </button>
+                    
+                    <button
+                        type="button"
+                        className="find-btn"
+                        onClick={findRoute}
+                        disabled={loadingCities || isSearching}
+                    >
+                        {isSearching ? "Looking…" : "Find the route"}
+                    </button>
+                </div>
 
                 {errorMsg && <p className="error-text">{errorMsg}</p>}
 

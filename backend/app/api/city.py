@@ -9,8 +9,6 @@ router = APIRouter(
     prefix="/cities",
     tags=["Cities"]
 )
-
-
 @router.post("/")
 def create_city(city: CityCreate, db: Session = Depends(get_db)):
 

@@ -1,12 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
-const sections = [
-    { title: "Cities", blurb: "Keep the city list up to date.", path: "/cities" },
-    { title: "Roads", blurb: "Wire up the connections between cities.", path: "/roads" },
-    { title: "Route Planner", blurb: "Find the fastest way from A to B.", path: "/route" },
-];
-
 function Dashboard() {
     const navigate = useNavigate();
 
@@ -16,30 +10,58 @@ function Dashboard() {
     };
 
     return (
-        <div className="dashboard">
-            <div className="dashboard-header">
-                <h1>Hey, where to?</h1>
-                <button type="button" className="logout-btn" onClick={logout}>
-                    Log out
-                </button>
-            </div>
+        <div className="dashboard-page-wrapper">
+            <div className="dashboard-container">
+                <div className="dashboard-header">
+                    <div className="header-brand">
+                        <span className="logo-badge">🧭 RouteIQ</span>
+                        <h1>Welcome back!</h1>
+                        <p className="welcome-subtext">
+                            Your active routing network is online and running. Delhi, Bengaluru, and other hubs are connected.
+                        </p>
+                    </div>
+                    <button type="button" className="logout-btn" onClick={logout}>
+                        Log out
+                    </button>
+                </div>
 
-            <div className="card-container">
-                {sections.map((section) => (
-                    <div
-                        key={section.path}
-                        className="card"
+                <div className="card-grid">
+                    <div 
+                        className="action-card" 
+                        onClick={() => navigate("/cities")}
                         role="button"
                         tabIndex={0}
-                        onClick={() => navigate(section.path)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") navigate(section.path);
-                        }}
+                        onKeyDown={(e) => e.key === "Enter" && navigate("/cities")}
                     >
-                        <h2>{section.title}</h2>
-                        <p>{section.blurb}</p>
+                        <h3>Manage Cities</h3>
+                        <p>Add new supply hubs or remove old destinations from the active network.</p>
+                        <span className="card-link">Go to Cities →</span>
                     </div>
-                ))}
+
+                    <div 
+                        className="action-card" 
+                        onClick={() => navigate("/roads")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === "Enter" && navigate("/roads")}
+                    >
+                        <h3>Connect Roads</h3>
+                        <p>Link your hubs together, edit distance metrics, and configure pathways.</p>
+                        <span className="card-link">Configure Roads →</span>
+                    </div>
+
+                    <div 
+                        className="action-card" 
+                        onClick={() => navigate("/route")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === "Enter" && navigate("/route")}
+                    >
+                        <h3>Route Planner</h3>
+                        <p>Calculate optimal routes using Dijkstra, Bellman-Ford, or A* algorithms.</p>
+                        <span className="card-link">Plan a Route →</span>
+                    </div>
+                </div>
             </div>
         </div>
     );

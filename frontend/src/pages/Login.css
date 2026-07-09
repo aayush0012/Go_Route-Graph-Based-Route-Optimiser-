@@ -1,48 +1,356 @@
-.login-container{
-    width:100%;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#f4f7fb;
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap");
+
+.login-page-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #F7F3ED;
+    overflow: hidden;
 }
 
-.login-box{
-    width:350px;
-    display:flex;
-    flex-direction:column;
-    gap:15px;
-    padding:30px;
-    background:white;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.15);
+/* Left Panel - Branding & Animation */
+.login-left-panel {
+    position: relative;
+    flex: 1.2;
+    background: linear-gradient(135deg, #0e2920 0%, #1c4238 60%, #255749 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 50px 60px;
+    overflow: hidden;
 }
 
-.login-box h1{
-    text-align:center;
+@media (max-width: 1024px) {
+    .login-left-panel {
+        display: none;
+    }
+    .login-page-container {
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0e2920 0%, #1c4238 60%, #255749 100%);
+    }
 }
 
-.login-box h2{
-    text-align:center;
-    font-weight:normal;
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
 }
 
-.login-box input{
-    padding:12px;
-    border:1px solid #ccc;
-    border-radius:6px;
-    font-size:16px;
+/* Network Visualizer */
+.network-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
 }
 
-.login-box button{
-    padding:12px;
-    background:#2563eb;
-    color:white;
-    border:none;
-    border-radius:6px;
-    font-size:16px;
+.node {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #4C8577;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #4C8577, 0 0 30px rgba(76, 133, 119, 0.5);
+    z-index: 2;
 }
 
-.login-box button:hover{
-    background:#1d4ed8;
+.node-1 { top: 20%; left: 30%; }
+.node-2 { top: 35%; left: 75%; }
+.node-3 { top: 75%; left: 65%; }
+.node-4 { top: 60%; left: 25%; }
+
+/* Connections represented as border vectors */
+.connection {
+    position: absolute;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    transform-origin: top left;
+    z-index: 1;
 }
+
+/* Hardcoded vector simulations for the 4 nodes */
+.conn-1-2 {
+    top: 21%; left: 31%;
+    width: 47%;
+    height: 15%;
+    border-top: 1px dashed rgba(76, 133, 119, 0.4);
+    transform: rotate(18.5deg);
+}
+
+.conn-2-3 {
+    top: 36%; left: 76%;
+    width: 10%;
+    height: 40%;
+    border-right: 1px dashed rgba(76, 133, 119, 0.4);
+    transform: rotate(14deg);
+}
+
+.conn-3-4 {
+    top: 61%; left: 26%;
+    width: 40%;
+    height: 15%;
+    border-bottom: 1px dashed rgba(76, 133, 119, 0.4);
+    transform: rotate(20deg);
+}
+
+.conn-4-1 {
+    top: 21%; left: 31%;
+    width: 5%;
+    height: 40%;
+    border-left: 1px dashed rgba(76, 133, 119, 0.4);
+    transform: rotate(-10deg);
+}
+
+
+
+.brand-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.logo-badge {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    width: fit-content;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+    color: #ECE4D8;
+}
+
+.brand-content h1 {
+    font-family: "Quicksand", sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+.tagline {
+    font-size: 16px;
+    color: #c7d7d2;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 480px;
+}
+
+.feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.feature-list li {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.feat-icon {
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-list strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    color: #ffffff;
+}
+
+.feature-list p {
+    font-size: 13.5px;
+    color: #a3bfb7;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Right Panel - Form Container */
+.login-right-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.login-form-box {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(43, 43, 40, 0.05), 0 1px 3px rgba(43, 43, 40, 0.02);
+    border: 1px solid #ECE4D8;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .login-form-box {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.form-header h2 {
+    font-family: "Quicksand", sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #2B2B28;
+    margin-bottom: 6px;
+}
+
+.form-header p {
+    font-size: 14px;
+    color: #83796C;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #83796C;
+    letter-spacing: 0.2px;
+}
+
+.input-group input {
+    padding: 12px 16px;
+    border: 1.5px solid #E3DACB;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #2B2B28;
+    background: #faf9f6;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+    border-color: #4C8577;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(76, 133, 119, 0.15);
+}
+
+.primary-login-btn {
+    padding: 13px;
+    background: #4C8577;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(76, 133, 119, 0.25);
+    transition: all 0.2s ease;
+}
+
+.primary-login-btn:hover:not(:disabled) {
+    background: #3E6E62;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(76, 133, 119, 0.35);
+}
+
+.primary-login-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.primary-login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #B7AB98;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ECE4D8;
+}
+
+.divider span {
+    padding: 0 10px;
+}
+
+.guest-login-btn {
+    padding: 12px;
+    background: transparent;
+    color: #4C8577;
+    border: 2px solid #4C8577;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.guest-login-btn:hover:not(:disabled) {
+    background: rgba(76, 133, 119, 0.08);
+}
+
+.guest-login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.register-redirect {
+    font-size: 13.5px;
+    text-align: center;
+    color: #83796C;
+    margin-top: 10px;
+}
+
+.register-redirect span {
+    color: #4C8577;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.register-redirect span:hover {
+    color: #3E6E62;
+    text-decoration: underline;
+}

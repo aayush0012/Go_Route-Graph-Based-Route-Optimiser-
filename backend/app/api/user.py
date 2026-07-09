@@ -68,6 +68,35 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/login/guest")
+def guest_login(db: Session = Depends(get_db)):
+
+    guest_email = "guest@routeiq.com"
+    guest_user = db.query(User).filter(User.email == guest_email).first()
+
+    if not guest_user:
+        guest_user = User(
+            username="Guest User",
+            email=guest_email,
+            password=hash_password("guest_secure_placeholder_password_123")
+        )
+        db.add(guest_user)
+        db.commit()
+        db.refresh(guest_user)
+
+    token = create_access_token(
+        {
+            "sub": guest_user.email
+        }
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
+
+
+
 @router.get("/me")
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),

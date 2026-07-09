@@ -1,6 +1,4 @@
 import heapq
-
-
 def dijkstra(graph, source, destination):
 
     pq = [(0, source)]

@@ -10,7 +10,7 @@ from app.api.road import router as road_router
 from app.api.route import router as route_router
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
-    title="RouteIQ API",
+    title="Go Route API",
     version="1.0.0",
 )
 app.add_middleware(
@@ -26,4 +26,4 @@ app.include_router(city_router)
 app.include_router(road_router)
 @app.get("/")
 def home():
-    return {"message": "Welcome to RouteIQ 🚗"}
+    return {"message": "Welcome to GoRoute 🚗"}

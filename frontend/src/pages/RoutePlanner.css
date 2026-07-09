@@ -5,7 +5,6 @@
     padding: 36px 40px;
     border: 1px solid #ECE4D8;
     border-radius: 16px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #2B2B28;
     max-width: 640px;
 }
@@ -128,4 +127,66 @@
 
 .path-arrow {
     color: #B7AB98;
+}
+
+.algorithm-field {
+    flex: 1 1 100%;
+    margin-top: 10px;
+}
+
+.stop-field {
+    position: relative;
+}
+
+.stop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.remove-stop-btn {
+    background: transparent;
+    border: none;
+    color: #B3463A;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+}
+
+.remove-stop-btn:hover {
+    opacity: 1;
+}
+
+.planner-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.add-stop-btn {
+    padding: 11px 20px;
+    border: 1.5px dashed #4C8577;
+    background: transparent;
+    color: #4C8577;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-stop-btn:hover:not(:disabled) {
+    background: rgba(76, 133, 119, 0.06);
+    border-color: #3E6E62;
+    color: #3E6E62;
+}
+
+.add-stop-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

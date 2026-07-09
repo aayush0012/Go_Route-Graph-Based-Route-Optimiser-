@@ -16,7 +16,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
