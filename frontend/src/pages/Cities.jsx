@@ -13,9 +13,11 @@ function Cities() {
     const fetchCities = async () => {
         try {
             const response = await api.get("/cities/");
-            setCities(response.data);
+            const data = Array.isArray(response.data) ? response.data : [];
+            setCities(data);
         } catch (error) {
             console.log(error);
+            setCities([]);
         }
     };
 

@@ -56,9 +56,14 @@ function RouteMap({
     optimalPathNodes = [],
     onSelectCity,
 }) {
+    const safeCities = Array.isArray(cities) ? cities : [];
+    const safeRoads = Array.isArray(roads) ? roads : [];
+    const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
+    const safeOptimalNodes = Array.isArray(optimalPathNodes) ? optimalPathNodes : [];
+
     // Filter cities with valid lat/lng
-    const validCities = cities.filter(
-        (c) => c.latitude !== null && c.longitude !== null && !isNaN(c.latitude) && !isNaN(c.longitude)
+    const validCities = safeCities.filter(
+        (c) => c && c.latitude !== null && c.longitude !== null && !isNaN(c.latitude) && !isNaN(c.longitude)
     );
 
     // Default map center (India center if fallback)
@@ -67,13 +72,13 @@ function RouteMap({
         : [20.5937, 78.9629];
 
     // Build route polyline coordinates from routePathNodes or routeSegments
-    const routePolylineCoords = routePathNodes
-        .filter((n) => n.lat !== null && n.lng !== null)
+    const routePolylineCoords = safePathNodes
+        .filter((n) => n && n.lat !== null && n.lng !== null)
         .map((n) => [n.lat, n.lng]);
 
     // Build optimal route polyline coordinates
-    const optimalPolylineCoords = optimalPathNodes
-        .filter((n) => n.lat !== null && n.lng !== null)
+    const optimalPolylineCoords = safeOptimalNodes
+        .filter((n) => n && n.lat !== null && n.lng !== null)
         .map((n) => [n.lat, n.lng]);
 
     // Gather points to fit bounds
@@ -88,7 +93,7 @@ function RouteMap({
     });
 
     const networkRoadLines = [];
-    roads.forEach((road) => {
+    safeRoads.forEach((road) => {
         const src = cityMapById[road.source_city_id];
         const dst = cityMapById[road.destination_city_id];
         if (src && dst) {

@@ -19,23 +19,27 @@ function Roads() {
     const fetchCities = async () => {
         try {
             const response = await api.get("/cities/");
-            setCities(response.data);
+            const data = Array.isArray(response.data) ? response.data : [];
+            setCities(data);
 
-            if (response.data.length > 0) {
-                setSourceCity((prev) => (prev ? prev : response.data[0].id));
-                setDestinationCity((prev) => (prev ? prev : response.data[Math.min(1, response.data.length - 1)].id));
+            if (data.length > 0) {
+                setSourceCity((prev) => (prev && data.some((c) => Number(c.id) === Number(prev)) ? prev : data[0].id));
+                setDestinationCity((prev) => (prev && data.some((c) => Number(c.id) === Number(prev)) ? prev : data[Math.min(1, data.length - 1)].id));
             }
         } catch (error) {
             console.log(error);
+            setCities([]);
         }
     };
 
     const fetchRoads = async () => {
         try {
             const response = await api.get("/roads/");
-            setRoads(response.data);
+            const data = Array.isArray(response.data) ? response.data : [];
+            setRoads(data);
         } catch (error) {
             console.log(error);
+            setRoads([]);
         }
     };
 
@@ -71,16 +75,20 @@ function Roads() {
             });
 
             setDistance("");
-            fetchRoads();
+            await fetchRoads();
         } catch (error) {
             const detail = error.response?.data?.detail;
             let msg = "Couldn't add road connection.";
             if (typeof detail === "string") {
                 msg = detail;
             } else if (Array.isArray(detail)) {
-                msg = detail.map((d) => d.msg).join(", ");
+                msg = detail.map((d) => (typeof d === "string" ? d : (d.msg || JSON.stringify(d)))).join(", ");
+            } else if (detail && typeof detail === "object") {
+                msg = JSON.stringify(detail);
             } else if (error.message) {
-                msg = error.message;
+                msg = error.message.includes("Network Error") || error.code === "ERR_NETWORK"
+                    ? "Network Error: Unable to connect to backend server. Make sure the backend (FastAPI) is running."
+                    : error.message;
             }
             setErrorMsg(msg);
         } finally {
@@ -91,14 +99,17 @@ function Roads() {
     const deleteRoad = async (id) => {
         try {
             await api.delete(`/roads/${id}`);
-            setRoads((prev) => prev.filter((r) => r.id !== id));
+            setRoads((prev) => (Array.isArray(prev) ? prev.filter((r) => r && r.id !== id) : []));
         } catch (error) {
             console.log(error);
         }
     };
 
+    const safeCities = Array.isArray(cities) ? cities : [];
+    const safeRoads = Array.isArray(roads) ? roads.filter(Boolean) : [];
+
     const getCityName = (id) => {
-        const city = cities.find((c) => Number(c.id) === Number(id));
+        const city = safeCities.find((c) => c && Number(c.id) === Number(id));
         return city ? city.name : `City #${id}`;
     };
 
@@ -123,9 +134,9 @@ function Roads() {
                                 id="road-source"
                                 value={sourceCity}
                                 onChange={(e) => setSourceCity(e.target.value)}
-                                disabled={loading}
+                                disabled={loading || safeCities.length === 0}
                             >
-                                {cities.map((city) => (
+                                {safeCities.map((city) => (
                                     <option key={city.id} value={city.id}>
                                         {city.name}
                                     </option>
@@ -139,9 +150,9 @@ function Roads() {
                                 id="road-destination"
                                 value={destinationCity}
                                 onChange={(e) => setDestinationCity(e.target.value)}
-                                disabled={loading}
+                                disabled={loading || safeCities.length === 0}
                             >
-                                {cities.map((city) => (
+                                {safeCities.map((city) => (
                                     <option key={city.id} value={city.id}>
                                         {city.name}
                                     </option>
@@ -184,11 +195,11 @@ function Roads() {
                     <h3 className="section-title">Connected Network Edges</h3>
                     {loading && <p className="empty-text">Loading network connections...</p>}
 
-                    {!loading && roads.length === 0 && (
+                    {!loading && safeRoads.length === 0 && (
                         <p className="empty-text">No connected roads configured yet.</p>
                     )}
 
-                    {!loading && roads.length > 0 && (
+                    {!loading && safeRoads.length > 0 && (
                         <div className="road-table-container">
                             <table className="road-table">
                                 <thead>
@@ -202,8 +213,8 @@ function Roads() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {roads.map((road, idx) => (
-                                        <tr key={road.id}>
+                                    {safeRoads.map((road, idx) => (
+                                        <tr key={road.id || idx}>
                                             <td>{idx + 1}</td>
                                             <td className="font-semibold">{getCityName(road.source_city_id)}</td>
                                             <td>
@@ -212,7 +223,7 @@ function Roads() {
                                                 </span>
                                             </td>
                                             <td className="font-semibold">{getCityName(road.destination_city_id)}</td>
-                                            <td className="font-mono">{road.distance} km</td>
+                                            <td className="font-mono">{road.distance != null ? `${road.distance} km` : "—"}</td>
                                             <td>
                                                 <button
                                                     type="button"
