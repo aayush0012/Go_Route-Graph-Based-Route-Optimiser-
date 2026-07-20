@@ -1,211 +1,233 @@
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-.roads {
-    max-width: 900px;
-    margin: 0 auto;
-    color: #2B2B28;
-}
-
-.roads h1 {
-    font-family: "Quicksand", sans-serif;
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 6px;
-}
-
-.subtitle {
-    margin: 0 0 26px;
-    color: #83796C;
-    font-size: 14.5px;
-}
-
-.road-form {
+.roads-workspace {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    color: #0f172a;
+}
+
+/* Header */
+.workspace-header {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.header-title {
+    font-family: "Inter", sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    margin: 0 0 4px;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    font-weight: 400;
+    max-width: 900px;
+    line-height: 1.5;
+}
+
+/* Control Console */
+.road-control-console {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+.console-fields-row {
     display: flex;
     align-items: flex-end;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
-    background: #fffdfb;
-    border: 1px solid #ECE4D8;
-    border-radius: 14px;
-    padding: 20px 22px;
 }
 
-.field {
+.console-field {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
+    flex: 1;
     min-width: 180px;
 }
 
-.field-narrow {
-    min-width: 110px;
+.console-field.field-dist {
+    min-width: 220px;
 }
 
-.field label {
-    font-size: 13px;
-    color: #83796C;
+.console-field.field-checkbox {
+    min-width: auto;
+    flex: 0;
+    padding-bottom: 8px;
 }
 
-.field select,
-.field input {
-    padding: 9px 11px;
-    border: 1px solid #E3DACB;
-    border-radius: 9px;
-    background: #fff;
-    font-size: 14px;
-    color: #2B2B28;
+.console-field label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #475569;
 }
 
-.field select:focus-visible,
-.field input:focus-visible {
-    outline: 2px solid #4C8577;
-    outline-offset: 1px;
+.console-field select,
+.console-field input {
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #0f172a;
+    transition: border-color 0.15s ease;
+}
+
+.console-field select:focus,
+.console-field input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .checkbox {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 13.5px;
-    color: #83796C;
-    padding-bottom: 10px;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
     white-space: nowrap;
 }
 
 .checkbox input {
-    width: 15px;
-    height: 15px;
-    accent-color: #4C8577;
-}
-
-.add-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 9px;
-    background: #4C8577;
-    color: #fff;
-    font-weight: 600;
-    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
     cursor: pointer;
-    margin-left: auto;
 }
 
-.add-btn:hover:not(:disabled) {
-    background: #3E6E62;
+.btn-add-road {
+    padding: 9.5px 22px;
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
 }
 
-.add-btn:disabled {
-    opacity: 0.55;
+.btn-add-road:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.btn-add-road:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.error-text {
-    width: 100%;
-    margin: 14px 0 0;
-    color: #B3463A;
-    font-size: 13.5px;
-}
-
-.road-list {
-    width: 100%;
-    margin: 24px 0 0;
-}
-
-.empty-text {
-    color: #83796C;
-    font-size: 14px;
-    padding: 14px 0;
-}
-
-.road-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    background: #fffdfb;
-    border: 1px solid #ECE4D8;
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
-}
-
-.road-row-text {
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.arrow,
-.dot {
-    color: #B7AB98;
-}
-
-.delete-btn {
-    border: none;
-    background: none;
-    color: #83796C;
+.console-error-message {
+    margin-top: 12px;
     font-size: 13px;
-    cursor: pointer;
-    padding: 5px 8px;
-    border-radius: 6px;
-    flex-shrink: 0;
+    color: #dc2626;
+    font-weight: 500;
 }
 
-.delete-btn:hover {
-    color: #B3463A;
-    background: rgba(179, 70, 58, 0.08);
-}
-
-@media (max-width: 640px) {
-    .roads {
-        padding: 26px 20px;
-    }
-
-    .road-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-}
-
-.roads-guide {
-    width: 100%;
-    margin: 0 0 24px;
-    background: #fffdfb;
-    border: 1px solid #ECE4D8;
-    border-radius: 14px;
-    padding: 20px 22px;
+/* Road Network Table Section */
+.road-list-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     text-align: left;
 }
 
-.roads-guide h3 {
-    font-family: "Quicksand", sans-serif;
+.section-title {
     font-size: 16px;
     font-weight: 700;
-    color: #4C8577;
-    margin-bottom: 8px;
-    margin-top: 0;
+    color: #0f172a;
+    margin: 0 0 18px;
+    letter-spacing: -0.2px;
 }
 
-.roads-guide p {
-    font-size: 13.5px;
-    color: #83796C;
-    line-height: 1.6;
+.empty-text {
+    color: #64748b;
+    font-size: 14px;
     margin: 0;
 }
 
-.roads-guide ul {
-    margin: 0;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+.road-table-container {
+    overflow-x: auto;
 }
 
-.roads-guide li {
+.road-table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 13.5px;
-    color: #83796C;
-    line-height: 1.5;
+}
+
+.road-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.road-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-mono {
+    font-family: monospace;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.badge-direction {
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.btn-delete-road {
+    border: none;
+    background: transparent;
+    color: #dc2626;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.btn-delete-road:hover {
+    background: #fef2f2;
 }

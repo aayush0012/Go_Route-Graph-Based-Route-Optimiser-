@@ -1,140 +1,207 @@
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-.cities-page {
-    background: #fffdfb;
-    padding: 36px 40px;
-    border: 1px solid #ECE4D8;
-    border-radius: 16px;
-    color: #2B2B28;
-    max-width: 640px;
+.cities-workspace {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    color: #0f172a;
 }
 
-.cities-page h1 {
-    font-family: "Quicksand", sans-serif;
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 8px;
+/* Header */
+.workspace-header {
+    margin-bottom: 20px;
+    text-align: left;
 }
 
-.subtitle {
-    margin: 0 0 28px;
-    color: #83796C;
-    font-size: 15px;
+.header-title {
+    font-family: "Inter", sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    margin: 0 0 4px;
 }
 
-.city-form {
+.header-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    font-weight: 400;
+    max-width: 900px;
+    line-height: 1.5;
+}
+
+/* Control Console */
+.city-control-console {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+.console-fields-row {
     display: flex;
     align-items: flex-end;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.field {
+.console-field {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    flex-grow: 1;
-    min-width: 200px;
+    gap: 6px;
+    flex: 1;
+    min-width: 180px;
 }
 
-.field label {
-    font-size: 13px;
-    color: #83796C;
-}
-
-.field input {
-    padding: 10px 12px;
-    border: 1px solid #E3DACB;
-    border-radius: 10px;
-    background: #fff;
-    font-size: 14.5px;
-    color: #2B2B28;
-}
-
-.field input:focus-visible {
-    outline: 2px solid #4C8577;
-    outline-offset: 1px;
-}
-
-.add-btn {
-    padding: 11px 22px;
-    border: none;
-    border-radius: 10px;
-    background: #4C8577;
-    color: #fff;
-    font-size: 15px;
+.console-field label {
+    font-size: 11px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #475569;
+}
+
+.console-field input {
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #0f172a;
+    transition: border-color 0.15s ease;
+}
+
+.console-field input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.btn-add-city {
+    padding: 9.5px 22px;
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
 }
 
-.add-btn:hover:not(:disabled) {
-    background: #3E6E62;
+.btn-add-city:hover:not(:disabled) {
+    background: #1d4ed8;
 }
 
-.add-btn:disabled {
-    opacity: 0.55;
+.btn-add-city:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.city-list {
-    margin-top: 24px;
-    border-top: 1px solid #ECE4D8;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* City List Table Section */
+.city-list-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 18px;
+    letter-spacing: -0.2px;
 }
 
 .empty-text {
-    color: #83796C;
-    font-size: 14.5px;
-    font-style: italic;
-    margin: 10px 0;
+    color: #64748b;
+    font-size: 14px;
+    margin: 0;
 }
 
-.city-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: #fffdfb;
-    border: 1px solid #ECE4D8;
-    border-radius: 10px;
-    transition: all 0.2s ease;
+.city-table-container {
+    overflow-x: auto;
 }
 
-.city-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
-    border-color: #DCD2C3;
+.city-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
 }
 
-.city-info {
-    font-size: 15px;
+.city-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.city-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-mono {
+    font-family: monospace;
     font-weight: 500;
-    color: #2B2B28;
+    color: #334155;
 }
 
-.city-index {
-    color: #B7AB98;
-    margin-right: 8px;
-    font-size: 13px;
-    font-weight: bold;
+.badge-status-active {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #047857;
+    background: #ecfdf5;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #a7f3d0;
 }
 
-.delete-btn {
-    padding: 6px 12px;
+.badge-status-pending {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #b45309;
+    background: #fffbeb;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #fde68a;
+}
+
+.btn-delete-city {
+    border: none;
     background: transparent;
-    color: #B3463A;
-    border: 1px solid #EFA89F;
-    border-radius: 6px;
+    color: #dc2626;
+    font-family: inherit;
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
 }
 
-.delete-btn:hover {
-    background: #FDF3F2;
-    border-color: #B3463A;
+.btn-delete-city:hover {
+    background: #fef2f2;
 }

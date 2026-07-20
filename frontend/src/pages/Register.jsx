@@ -34,55 +34,15 @@ function Register() {
     };
 
     return (
-        <div className="login-page-container">
-            <div className="login-left-panel">
-                <div className="network-bg">
-                    <div className="grid-overlay"></div>
-                    <div className="node node-1"></div>
-                    <div className="node node-2"></div>
-                    <div className="node node-3"></div>
-                    <div className="node node-4"></div>
-                    <div className="connection conn-1-2"></div>
-                    <div className="connection conn-2-3"></div>
-                    <div className="connection conn-3-4"></div>
-                    <div className="connection conn-4-1"></div>
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-header">
+                    <h1 className="login-brand">GoRoute</h1>
+                    <p className="login-subtitle">Create a new account to get started</p>
                 </div>
-                <div className="brand-content">
-                    <div className="logo-badge">🧭 GoRoute</div>
-                    <h1>Smart Route Optimization</h1>
-                    <p className="tagline">Connect locations, analyze connections, and discover the most efficient paths instantly.</p>
-                    
-                    <ul className="feature-list">
-                        <li>
-                            <div>
-                                <strong>Manage Locations</strong>
-                                <p>Add and update cities dynamically inside a database.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <strong>Map Road Connections</strong>
-                                <p>Link cities, set distances, and create routes.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <strong>Find Optimal Routes</strong>
-                                <p>Compute the shortest path using Dijkstra's algorithm.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div className="login-right-panel">
-                <form className="login-form-box" onSubmit={handleRegister}>
-                    <div className="form-header">
-                        <h2>Create Account</h2>
-                        <p>Get started with GoRoute to plan optimal paths.</p>
-                    </div>
 
-                    <div className="input-group">
+                <form className="login-form" onSubmit={handleRegister}>
+                    <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input
                             id="username"
@@ -94,7 +54,7 @@ function Register() {
                         />
                     </div>
 
-                    <div className="input-group">
+                    <div className="form-group">
                         <label htmlFor="email">Email Address</label>
                         <input
                             id="email"
@@ -106,7 +66,7 @@ function Register() {
                         />
                     </div>
 
-                    <div className="input-group">
+                    <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
                             id="password"
@@ -118,14 +78,17 @@ function Register() {
                         />
                     </div>
 
-                    <button type="submit" className="primary-login-btn" disabled={isLoading}>
-                        {isLoading ? "Creating Account..." : "Register"}
+                    <button type="submit" className="btn-primary-submit" disabled={isLoading}>
+                        {isLoading ? "Creating Account..." : "Create Account"}
                     </button>
-
-                    <p className="register-redirect">
-                        Already have an account? <span onClick={() => navigate("/")}>Login here</span>
-                    </p>
                 </form>
+
+                <div className="login-footer">
+                    <p>
+                        Already have an account?{" "}
+                        <span onClick={() => navigate("/")}>Sign In</span>
+                    </p>
+                </div>
             </div>
         </div>
     );

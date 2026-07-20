@@ -1,0 +1,179 @@
+.route-map-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.map-legend-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot.source {
+    background-color: #10b981;
+}
+
+.legend-dot.stop {
+    background-color: #f59e0b;
+}
+
+.legend-dot.destination {
+    background-color: #ef4444;
+}
+
+.legend-dot.city {
+    background-color: #3b82f6;
+}
+
+.route-highlight-legend {
+    margin-left: auto;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #bfdbfe;
+}
+
+.leaflet-map-view {
+    width: 100%;
+    height: 500px;
+    z-index: 1;
+}
+
+/* Custom Marker Styling - Minimal Dots */
+.custom-map-pin {
+    background: transparent;
+    border: none;
+}
+
+.pin-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+.dot-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pin-wrapper.source .dot-marker {
+    width: 15px;
+    height: 15px;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pin-wrapper.destination .dot-marker {
+    width: 15px;
+    height: 15px;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pin-wrapper.stop .dot-marker {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.pin-wrapper:hover .dot-marker {
+    transform: scale(1.35);
+}
+
+.pin-label {
+    margin-top: 3px;
+    background: rgba(15, 23, 42, 0.85);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.map-popup {
+    font-family: inherit;
+    color: #1e293b;
+}
+
+.map-popup h3 {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    color: #0f172a;
+}
+
+.coords-text {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0 0 10px 0;
+}
+
+.popup-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.popup-actions button {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-select-start {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0 !important;
+}
+
+.btn-select-start:hover {
+    background-color: #d1fae5;
+}
+
+.btn-select-end {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca !important;
+}
+
+.btn-select-end:hover {
+    background-color: #fee2e2;
+}

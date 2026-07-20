@@ -3,7 +3,7 @@ import heapq
 def dijkstra(graph, source, destination):
     pq = [(0, source)]
     distance = {node: float("inf") for node in graph}
-    # Ensure neighbors are added as well
+   
     for u in graph:
         for v, _ in graph[u]:
             if v not in distance:
@@ -35,9 +35,7 @@ def dijkstra(graph, source, destination):
     path.reverse()
     return distance[destination], path
 
-
 def bellman_ford(graph, source, destination):
-    # Collect all unique node IDs in graph
     nodes = set()
     for u in graph:
         nodes.add(u)
@@ -48,7 +46,6 @@ def bellman_ford(graph, source, destination):
     distance[source] = 0
     parent = {source: None}
 
-    # Relax edges |V| - 1 times
     for _ in range(len(nodes) - 1):
         for u in graph:
             for v, w in graph[u]:
@@ -69,17 +66,14 @@ def bellman_ford(graph, source, destination):
 
 
 def a_star(graph, source, destination):
-    # Since there are no spatial coordinates (lat/long) on the City model,
-    # we use an admissible heuristic h(n) = 0.
-    # This renders A* equivalent to Dijkstra in exploration order,
-    # but uses the standard A* open set, closed set, g-score, and f-score structures.
+
     def heuristic(node):
         return 0
 
-    # open_set pq elements: (f_score, node)
+   
     open_set = [(heuristic(source), source)]
     g_score = {node: float("inf") for node in graph}
-    # Add neighbor nodes
+   
     for u in graph:
         for v, _ in graph[u]:
             if v not in g_score:
