@@ -66,62 +66,76 @@
     z-index: 1;
 }
 
-/* Custom Marker Styling - Minimal Dots */
-.custom-map-pin {
-    background: transparent;
-    border: none;
+/* Custom Marker Styling - Explicit Badges */
+.custom-map-pin-container {
+    background: transparent !important;
+    border: none !important;
 }
 
 .pin-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: translate(-50%, -50%);
+    justify-content: flex-end;
+    width: 140px;
+    height: 50px;
     cursor: pointer;
 }
 
-.dot-marker {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+.pin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    max-width: 135px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pin-wrapper.source .dot-marker {
-    width: 15px;
-    height: 15px;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+.pin-wrapper:hover .pin-badge {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
-.pin-wrapper.destination .dot-marker {
-    width: 15px;
-    height: 15px;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+.pin-emoji {
+    font-size: 0.82rem;
 }
 
-.pin-wrapper.stop .dot-marker {
-    width: 14px;
-    height: 14px;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
+.pin-text {
+    letter-spacing: 0.2px;
 }
 
-.pin-wrapper:hover .dot-marker {
-    transform: scale(1.35);
+.pin-stem {
+    width: 2px;
+    height: 8px;
+    background: rgba(15, 23, 42, 0.65);
 }
 
-.pin-label {
-    margin-top: 3px;
-    background: rgba(15, 23, 42, 0.85);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 8px;
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.pin-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.pin-wrapper.source .pin-dot {
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.pin-wrapper.destination .pin-dot {
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
 .map-popup {

@@ -19,29 +19,82 @@ function MapBoundsUpdater({ points }) {
     return null;
 }
 
-// Custom Leaflet DivIcon generator for minimal dot markers
+const KNOWN_CITY_COORDS = {
+    "delhi": [28.6139, 77.2090],
+    "new delhi": [28.6139, 77.2090],
+    "mumbai": [19.0760, 72.8777],
+    "bengaluru": [12.9716, 77.5946],
+    "bangalore": [12.9716, 77.5946],
+    "chennai": [13.0827, 80.2707],
+    "kolkata": [22.5726, 88.3639],
+    "hyderabad": [17.3850, 78.4867],
+    "pune": [18.5204, 73.8567],
+    "jaipur": [26.9124, 75.7873],
+    "ahmedabad": [23.0225, 72.5714],
+    "mysore": [12.2958, 76.6394],
+    "mysuru": [12.2958, 76.6394],
+    "chandigarh": [30.7333, 76.7794],
+    "surat": [21.1702, 72.8311],
+    "lucknow": [26.8467, 80.9462],
+    "agra": [27.1767, 78.0081],
+    "varanasi": [25.3176, 82.9739],
+    "goa": [15.2993, 74.1240],
+    "kochi": [9.9312, 76.2673],
+    "indore": [22.7196, 75.8577],
+    "bhopal": [23.2599, 77.4126],
+    "patna": [25.5941, 85.1376],
+    "nagpur": [21.1458, 79.0882],
+    "vadodara": [22.3072, 73.1812],
+    "visakhapatnam": [17.6868, 83.2185],
+    "coimbatore": [11.0168, 76.9558],
+    "madurai": [9.9252, 78.1198],
+    "guwahati": [26.1445, 91.7362],
+    "ranchi": [23.3441, 85.3096],
+    "shimla": [31.1048, 77.1734],
+    "dehradun": [30.3165, 78.0322],
+    "amritsar": [31.6340, 74.8723],
+    "jodhpur": [26.2389, 73.0243],
+    "udaipur": [24.5854, 73.7125],
+    "kanpur": [26.4499, 80.3319],
+    "nashik": [19.9975, 73.7898],
+    "thiruvananthapuram": [8.5241, 76.9366],
+};
+
+// Custom Leaflet DivIcon generator for prominent city pin badges
 const createCustomIcon = (label, type = "city") => {
-    let color = "#3b82f6"; // Blue default
+    let color = "#2563eb";
+    let badgeBg = "#1d4ed8";
+    let iconEmoji = "🏙️";
 
     if (type === "source") {
-        color = "#10b981"; // Emerald green
+        color = "#10b981";
+        badgeBg = "#047857";
+        iconEmoji = "🟢";
     } else if (type === "destination") {
-        color = "#ef4444"; // Red
+        color = "#ef4444";
+        badgeBg = "#b91c1c";
+        iconEmoji = "🔴";
     } else if (type === "stop") {
-        color = "#f59e0b"; // Amber
+        color = "#f59e0b";
+        badgeBg = "#b45309";
+        iconEmoji = "🟠";
     }
 
     return L.divIcon({
-        className: "custom-map-pin",
+        className: "custom-map-pin-container",
         html: `
             <div class="pin-wrapper ${type}">
-                <div class="dot-marker" style="background-color: ${color}"></div>
-                <div class="pin-label">${label}</div>
+                <div class="pin-badge" style="background-color: ${badgeBg}">
+                    <span class="pin-emoji">${iconEmoji}</span>
+                    <span class="pin-text">${label}</span>
+                </div>
+                <div class="pin-stem"></div>
+                <div class="pin-dot" style="background-color: ${color}"></div>
             </div>
         `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -14],
+        iconSize: [140, 50],
+        iconAnchor: [70, 48],
+        popupAnchor: [0, -48],
     });
 };
 
@@ -61,10 +114,24 @@ function RouteMap({
     const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
     const safeOptimalNodes = Array.isArray(optimalPathNodes) ? optimalPathNodes : [];
 
-    // Filter cities with valid lat/lng
-    const validCities = safeCities.filter(
-        (c) => c && c.latitude !== null && c.longitude !== null && !isNaN(c.latitude) && !isNaN(c.longitude)
-    );
+    // Filter cities with valid lat/lng or fallback lookup
+    const validCities = safeCities.map((c) => {
+        if (!c) return null;
+        let lat = c.latitude;
+        let lng = c.longitude;
+
+        if ((lat === null || lng === null || isNaN(lat) || isNaN(lng)) && c.name) {
+            const key = c.name.toLowerCase().trim();
+            if (KNOWN_CITY_COORDS[key]) {
+                [lat, lng] = KNOWN_CITY_COORDS[key];
+            }
+        }
+
+        if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+            return { ...c, latitude: Number(lat), longitude: Number(lng) };
+        }
+        return null;
+    }).filter(Boolean);
 
     // Default map center (India center if fallback)
     const defaultCenter = validCities.length > 0
