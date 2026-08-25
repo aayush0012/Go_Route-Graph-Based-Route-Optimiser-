@@ -6,6 +6,7 @@ from app.database.database import get_db
 from app.models.city import City
 from app.models.road import Road
 from app.schemas.road import RoadCreate
+from app.services.cache_service import invalidate_all_caches
 
 router = APIRouter(
     prefix="/roads",
@@ -68,6 +69,7 @@ def create_road(
     db.commit()
     db.refresh(new_road)
 
+    invalidate_all_caches()
     return new_road
 
 
@@ -97,6 +99,7 @@ def delete_road(
     db.delete(road)
     db.commit()
 
+    invalidate_all_caches()
     return {
         "message": "Road deleted successfully"
     }

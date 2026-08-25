@@ -2,192 +2,292 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    border-radius: 16px;
+    height: 100%;
+    min-height: 560px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
-}
-
-.map-legend-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.legend-dot.source {
-    background-color: #10b981;
-}
-
-.legend-dot.stop {
-    background-color: #f59e0b;
-}
-
-.legend-dot.destination {
-    background-color: #ef4444;
-}
-
-.legend-dot.city {
-    background-color: #3b82f6;
-}
-
-.route-highlight-legend {
-    margin-left: auto;
-    color: #2563eb;
-    background: #eff6ff;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid #bfdbfe;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
 .leaflet-map-view {
     width: 100%;
-    height: 500px;
+    height: 100%;
+    min-height: 560px;
     z-index: 1;
 }
 
-/* Custom Marker Styling - Explicit Badges */
-.custom-map-pin-container {
+/* ========================================================
+   UNSELECTED / NON-ROUTE NODES (MUTED & LOW PROFILE)
+   ======================================================== */
+.unselected-node-container {
     background: transparent !important;
     border: none !important;
 }
 
-.pin-wrapper {
+.node-marker-wrapper.unselected {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    width: 140px;
-    height: 50px;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
     cursor: pointer;
 }
 
-.pin-badge {
-    display: inline-flex;
+.unselected-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #94A3B8;
+    border: 1.5px solid #FFFFFF;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    opacity: 0.55;
+    transition: all 0.2s ease;
+}
+
+.node-marker-wrapper.unselected:hover .unselected-dot {
+    opacity: 1;
+    transform: scale(1.6);
+    background-color: #475569;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================================
+   ACTIVE ROUTE NODES (SPECIAL COLOR-CODED)
+   ======================================================== */
+.compact-node-icon-container {
+    background: transparent !important;
+    border: none !important;
+}
+
+.node-marker-wrapper {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 14px;
-    color: #ffffff;
-    font-size: 0.78rem;
+    justify-content: center;
+    width: 90px;
+    cursor: pointer;
+    position: relative;
+}
+
+.node-halo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* START NODE (Vibrant Emerald with Pulsing Ring) */
+.node-marker-wrapper.source .node-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #10B981;
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4), 0 3px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: startPulse 2s infinite;
+}
+
+.node-marker-wrapper.source .inner-core {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FFFFFF;
+}
+
+@keyframes startPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* END DESTINATION NODE (Radiant Crimson with Pulsing Ring) */
+.node-marker-wrapper.destination .node-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #EF4444;
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4), 0 3px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: endPulse 2s infinite;
+}
+
+.node-marker-wrapper.destination .inner-core {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FFFFFF;
+}
+
+@keyframes endPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* STOPOVER NODE (Amber Gold) */
+.node-marker-wrapper.stop .node-dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #F59E0B;
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 0 0 3.5px rgba(245, 158, 11, 0.4), 0 3px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node-marker-wrapper.stop .inner-core {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #FFFFFF;
+}
+
+/* VIA TRANSIT NODE (Cobalt Blue) */
+.node-marker-wrapper.path-node .node-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background-color: #2563EB;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node-marker-wrapper.path-node .inner-core {
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: #FFFFFF;
+}
+
+/* Label Container & Badge Tags */
+.node-label-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3px;
+    pointer-events: none;
+}
+
+.badge-tag {
+    font-size: 8.5px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.badge-tag.source-tag {
+    background: #10B981;
+    color: #FFFFFF;
+}
+
+.badge-tag.dest-tag {
+    background: #EF4444;
+    color: #FFFFFF;
+}
+
+.badge-tag.stop-tag {
+    background: #F59E0B;
+    color: #FFFFFF;
+}
+
+.badge-tag.path-tag {
+    background: #2563EB;
+    color: #FFFFFF;
+}
+
+.node-label {
+    font-size: 10.5px;
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #0F172A;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid #CBD5E1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     white-space: nowrap;
-    max-width: 135px;
+    text-align: center;
+    max-width: 88px;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pin-wrapper:hover .pin-badge {
-    transform: scale(1.1);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-}
-
-.pin-emoji {
-    font-size: 0.82rem;
-}
-
-.pin-text {
-    letter-spacing: 0.2px;
-}
-
-.pin-stem {
-    width: 2px;
-    height: 8px;
-    background: rgba(15, 23, 42, 0.65);
-}
-
-.pin-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-}
-
-.pin-wrapper.source .pin-dot {
-    width: 12px;
-    height: 12px;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 2px 5px rgba(0, 0, 0, 0.4);
-}
-
-.pin-wrapper.destination .pin-dot {
-    width: 12px;
-    height: 12px;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 2px 5px rgba(0, 0, 0, 0.4);
-}
-
+/* Popups */
 .map-popup {
     font-family: inherit;
-    color: #1e293b;
+    color: #1E293B;
+    padding: 2px;
 }
 
 .map-popup h3 {
-    margin: 0 0 6px 0;
-    font-size: 1rem;
-    color: #0f172a;
+    margin: 0 0 4px 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0F172A;
 }
 
 .coords-text {
-    font-size: 0.8rem;
-    color: #64748b;
+    font-size: 0.78rem;
+    color: #64748B;
     margin: 0 0 10px 0;
 }
 
 .popup-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px;
 }
 
-.popup-actions button {
-    flex: 1;
-    padding: 6px 10px;
+.btn-select-start,
+.btn-select-end {
+    padding: 5px 10px;
     font-size: 0.75rem;
     font-weight: 600;
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.15s ease;
 }
 
 .btn-select-start {
-    background-color: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0 !important;
+    background: #10B981;
+    color: #FFFFFF;
 }
 
 .btn-select-start:hover {
-    background-color: #d1fae5;
+    background: #059669;
 }
 
 .btn-select-end {
-    background-color: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca !important;
+    background: #EF4444;
+    color: #FFFFFF;
 }
 
 .btn-select-end:hover {
-    background-color: #fee2e2;
+    background: #DC2626;
 }

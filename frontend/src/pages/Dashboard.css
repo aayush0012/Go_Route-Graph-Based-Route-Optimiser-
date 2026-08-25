@@ -1,160 +1,271 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap");
-
-.dashboard-page-wrapper {
+/* GoRoute Clean Modern Dashboard Layout */
+.goroute-home-layout {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #FFFFFF;
+    color: #0F172A;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Hero Container */
+.goroute-hero-container {
+    flex: 1;
+    max-width: 1280px;
     width: 100%;
-    background: #F7F3ED;
-    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0 auto;
+    padding: 72px 36px 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Hero Header Block */
+.hero-header-block {
+    text-align: center;
+    max-width: 760px;
+    margin-bottom: 64px;
+}
+
+.hero-title {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    color: #0F172A;
+    line-height: 1.15;
+    margin: 0 0 16px;
+}
+
+.hero-description {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16.5px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #475569;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 3 Features Grid */
+.features-grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    width: 100%;
+    max-width: 1180px;
+    border-top: 1px solid #ECEEF1;
+    border-bottom: 1px solid #ECEEF1;
+}
+
+.feature-card {
+    padding: 48px 36px;
+    background: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    border-right: 1px solid #ECEEF1;
+}
+
+.feature-card:first-child {
+    border-left: 1px solid #ECEEF1;
+}
+
+.feature-card:hover {
+    background-color: #FAFCFB;
+}
+
+.feature-card:focus-visible {
+    box-shadow: inset 0 0 0 2px #125541;
+}
+
+/* Feature Icon */
+.feature-icon-wrapper {
+    margin-bottom: 24px;
+    color: #125541; /* Emerald green matching the screenshot */
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
+    height: 32px;
 }
 
-.dashboard-container {
-    width: 100%;
-    max-width: 960px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+.feature-svg {
+    color: #125541;
+    transition: transform 0.22s ease;
 }
 
-/* Header Section */
-.dashboard-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    width: 100%;
+.feature-card:hover .feature-svg {
+    transform: translateY(-2px);
 }
 
-.header-brand h1 {
-    font-family: "Quicksand", sans-serif;
-    font-size: 36px;
+/* Card Content */
+.feature-card-title {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 24px;
     font-weight: 700;
-    margin: 8px 0 6px;
-    color: #2B2B28;
+    letter-spacing: -0.025em;
+    color: #0F172A;
+    margin: 0 0 14px;
 }
 
-.welcome-subtext {
-    font-size: 15.5px;
-    color: #83796C;
-    margin: 0;
-    line-height: 1.6;
-    max-width: 560px;
-}
-
-.logo-badge {
-    background: rgba(76, 133, 119, 0.08);
-    color: #4C8577;
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 13.5px;
-    font-weight: 600;
-    width: fit-content;
-    display: block;
-    letter-spacing: 0.5px;
-}
-
-.logout-btn {
-    padding: 10px 20px;
-    border: 1px solid #E3DACB;
-    border-radius: 12px;
-    background: #ffffff;
-    color: #83796C;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-    border-color: #B3463A;
-    color: #B3463A;
-    background: #FFFDFB;
-    box-shadow: 0 4px 8px rgba(179, 70, 58, 0.08);
-}
-
-/* Card Grid Layout */
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    width: 100%;
-}
-
-.action-card {
-    background: #ffffff;
-    border: 1px solid #ECE4D8;
-    border-radius: 20px;
-    padding: 30px 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(43, 43, 40, 0.02);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    outline: none;
-}
-
-.action-card:hover,
-.action-card:focus-visible {
-    transform: translateY(-4px);
-    border-color: #4C8577;
-    box-shadow: 0 12px 30px rgba(76, 133, 119, 0.12);
-}
-
-.card-emoji {
-    font-size: 32px;
-    margin-bottom: 4px;
-}
-
-.action-card h3 {
-    font-family: "Quicksand", sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #2B2B28;
-    margin: 0;
-}
-
-.action-card p {
-    font-size: 14px;
-    color: #83796C;
-    line-height: 1.5;
-    margin: 0;
+.feature-card-desc {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14.5px;
+    font-weight: 400;
+    line-height: 1.58;
+    color: #475569;
+    margin: 0 0 32px;
     flex-grow: 1;
 }
 
-.card-link {
-    font-size: 13.5px;
+/* Action Link */
+.feature-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #0F172A;
+    margin-top: auto;
+    transition: color 0.15s ease;
+}
+
+.action-arrow {
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-card:hover .action-arrow {
+    transform: translateX(5px);
+}
+
+.feature-card:hover .feature-action-link {
+    color: #125541;
+}
+
+/* ========================================================
+   MINIMAL & CLEAN FOOTER
+   ======================================================== */
+.goroute-footer {
+    width: 100%;
+    background: #FFFFFF;
+    border-top: 1px solid #ECEEF1;
+    margin-top: auto;
+    padding: 28px 36px;
+}
+
+.goroute-footer-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-brand-name {
+    font-size: 15px;
     font-weight: 700;
-    color: #4C8577;
-    transition: transform 0.2s ease;
-    margin-top: 8px;
-    display: inline-block;
+    color: #125541;
+    letter-spacing: -0.02em;
 }
 
-.action-card:hover .card-link {
-    transform: translateX(4px);
+.footer-dot {
+    color: #CBD5E1;
+    font-size: 14px;
 }
 
-@media (max-width: 600px) {
-    .dashboard-container {
-        gap: 30px;
+.footer-copyright {
+    font-size: 13.5px;
+    color: #64748B;
+    margin: 0;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.footer-nav-link {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #64748B;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+.footer-nav-link:hover {
+    color: #125541;
+}
+
+/* ========================================================
+   RESPONSIVE DESIGN
+   ======================================================== */
+@media (max-width: 1024px) {
+    .features-grid-container {
+        grid-template-columns: 1fr;
+        border: 1px solid #ECEEF1;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
-    .dashboard-header {
+    .feature-card {
+        border-right: none;
+        border-bottom: 1px solid #ECEEF1;
+    }
+
+    .feature-card:last-child {
+        border-bottom: none;
+    }
+
+    .feature-card:first-child {
+        border-left: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .goroute-hero-container {
+        padding: 48px 20px;
+    }
+
+    .hero-title {
+        font-size: 32px;
+    }
+
+    .hero-description {
+        font-size: 15px;
+    }
+
+    .feature-card {
+        padding: 32px 24px;
+    }
+
+    .goroute-footer {
+        padding: 24px 20px;
+    }
+
+    .goroute-footer-inner {
         flex-direction: column;
         align-items: flex-start;
+        gap: 12px;
+    }
+
+    .footer-right {
         gap: 16px;
-    }
-
-    .logout-btn {
-        width: 100%;
-        text-align: center;
-    }
-
-    .action-card {
-        padding: 24px;
     }
 }

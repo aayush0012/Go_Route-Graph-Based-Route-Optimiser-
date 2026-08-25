@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.models.city import City
 from app.schemas.city import CityCreate
+from app.services.cache_service import invalidate_all_caches
 
 router = APIRouter(
     prefix="/cities",
@@ -112,6 +113,7 @@ def create_city(city: CityCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_city)
 
+    invalidate_all_caches()
     return new_city
 
 
@@ -155,6 +157,7 @@ def delete_city(city_id: int, db: Session = Depends(get_db)):
     db.delete(city)
     db.commit()
 
+    invalidate_all_caches()
     return {
         "message": "City deleted successfully"
     }

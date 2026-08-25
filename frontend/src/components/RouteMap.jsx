@@ -4,18 +4,20 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./RouteMap.css";
 
-// Helper component to adjust map bounds automatically when markers or routes change
-function MapBoundsUpdater({ points }) {
+// Helper component to auto-focus bounds on the active route or all points
+function MapBoundsUpdater({ routePoints, allPoints }) {
     const map = useMap();
     useEffect(() => {
-        if (points && points.length > 0) {
-            const validPoints = points.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
+        map.invalidateSize();
+        const targetPoints = routePoints && routePoints.length > 0 ? routePoints : allPoints;
+        if (targetPoints && targetPoints.length > 0) {
+            const validPoints = targetPoints.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]));
             if (validPoints.length > 0) {
                 const bounds = L.latLngBounds(validPoints);
                 map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
             }
         }
-    }, [points, map]);
+    }, [routePoints, allPoints, map]);
     return null;
 }
 
@@ -60,41 +62,53 @@ const KNOWN_CITY_COORDS = {
     "thiruvananthapuram": [8.5241, 76.9366],
 };
 
-// Custom Leaflet DivIcon generator for prominent city pin badges
-const createCustomIcon = (label, type = "city") => {
-    let color = "#2563eb";
-    let badgeBg = "#1d4ed8";
-    let iconEmoji = "🏙️";
+// Node Marker Generator: ONLY active route nodes have special colors
+const createCustomIcon = (label, type = "unselected") => {
+    const shortLabel = label.split("(")[0].trim();
 
+    if (type === "unselected") {
+        return L.divIcon({
+            className: "unselected-node-container",
+            html: `
+                <div class="node-marker-wrapper unselected" title="${shortLabel}">
+                    <div class="unselected-dot"></div>
+                </div>
+            `,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+            popupAnchor: [0, -8],
+        });
+    }
+
+    let specialBadge = "";
     if (type === "source") {
-        color = "#10b981";
-        badgeBg = "#047857";
-        iconEmoji = "🟢";
+        specialBadge = `<span class="badge-tag source-tag">START</span>`;
     } else if (type === "destination") {
-        color = "#ef4444";
-        badgeBg = "#b91c1c";
-        iconEmoji = "🔴";
+        specialBadge = `<span class="badge-tag dest-tag">END</span>`;
     } else if (type === "stop") {
-        color = "#f59e0b";
-        badgeBg = "#b45309";
-        iconEmoji = "🟠";
+        specialBadge = `<span class="badge-tag stop-tag">STOP</span>`;
+    } else if (type === "path-node") {
+        specialBadge = `<span class="badge-tag path-tag">VIA</span>`;
     }
 
     return L.divIcon({
-        className: "custom-map-pin-container",
+        className: "compact-node-icon-container",
         html: `
-            <div class="pin-wrapper ${type}">
-                <div class="pin-badge" style="background-color: ${badgeBg}">
-                    <span class="pin-emoji">${iconEmoji}</span>
-                    <span class="pin-text">${label}</span>
+            <div class="node-marker-wrapper ${type}">
+                <div class="node-halo">
+                    <div class="node-dot">
+                        <span class="inner-core"></span>
+                    </div>
                 </div>
-                <div class="pin-stem"></div>
-                <div class="pin-dot" style="background-color: ${color}"></div>
+                <div class="node-label-container">
+                    ${specialBadge}
+                    <span class="node-label">${shortLabel}</span>
+                </div>
             </div>
         `,
-        iconSize: [140, 50],
-        iconAnchor: [70, 48],
-        popupAnchor: [0, -48],
+        iconSize: [90, 36],
+        iconAnchor: [45, 10],
+        popupAnchor: [0, -14],
     });
 };
 
@@ -114,7 +128,6 @@ function RouteMap({
     const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
     const safeOptimalNodes = Array.isArray(optimalPathNodes) ? optimalPathNodes : [];
 
-    // Filter cities with valid lat/lng or fallback lookup
     const validCities = safeCities.map((c) => {
         if (!c) return null;
         let lat = c.latitude;
@@ -128,143 +141,158 @@ function RouteMap({
         }
 
         if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-            return { ...c, latitude: Number(lat), longitude: Number(lng) };
+            return { ...c, latitude: lat, longitude: lng };
         }
         return null;
     }).filter(Boolean);
 
-    // Default map center (India center if fallback)
-    const defaultCenter = validCities.length > 0
-        ? [validCities[0].latitude, validCities[0].longitude]
-        : [20.5937, 78.9629];
-
-    // Build route polyline coordinates from routePathNodes or routeSegments
-    const routePolylineCoords = safePathNodes
-        .filter((n) => n && n.lat !== null && n.lng !== null)
-        .map((n) => [n.lat, n.lng]);
-
-    // Build optimal route polyline coordinates
-    const optimalPolylineCoords = safeOptimalNodes
-        .filter((n) => n && n.lat !== null && n.lng !== null)
-        .map((n) => [n.lat, n.lng]);
-
-    // Gather points to fit bounds
-    const allCoords = routePolylineCoords.length > 0
-        ? routePolylineCoords
-        : (optimalPolylineCoords.length > 0 ? optimalPolylineCoords : validCities.map((c) => [c.latitude, c.longitude]));
-
-    // Build road network lines
-    const cityMapById = {};
-    validCities.forEach((c) => {
-        cityMapById[c.id] = c;
+    const cityMap = {};
+    validCities.forEach(c => {
+        cityMap[c.id] = c;
     });
 
-    const networkRoadLines = [];
-    safeRoads.forEach((road) => {
-        const src = cityMapById[road.source_city_id];
-        const dst = cityMapById[road.destination_city_id];
+    const hasActiveRoute = safePathNodes.length > 0;
+    const pathCityIds = new Set(safePathNodes.map(n => Number(n.id)));
+    const pathCityNames = new Set(safePathNodes.map(n => n.name ? n.name.toLowerCase().trim() : ""));
+
+    const allRoadPolylines = safeRoads.map((road) => {
+        const src = cityMap[road.source_city_id];
+        const dst = cityMap[road.destination_city_id];
         if (src && dst) {
-            networkRoadLines.push({
+            return {
                 id: road.id,
+                distance: road.distance,
                 positions: [
                     [src.latitude, src.longitude],
                     [dst.latitude, dst.longitude],
                 ],
-                distance: road.distance,
-                isBidirectional: road.is_bidirectional,
-                sourceName: src.name,
-                destName: dst.name,
-            });
+            };
         }
-    });
+        return null;
+    }).filter(Boolean);
+
+    const calculatedRoutePolylines = [];
+    const routePoints = [];
+
+    if (routeSegments && routeSegments.length > 0) {
+        routeSegments.forEach((seg) => {
+            if (seg.source_coords && seg.dest_coords) {
+                calculatedRoutePolylines.push([
+                    seg.source_coords,
+                    seg.dest_coords,
+                ]);
+                routePoints.push(seg.source_coords);
+                routePoints.push(seg.dest_coords);
+            }
+        });
+    } else if (safePathNodes.length >= 2) {
+        for (let i = 0; i < safePathNodes.length - 1; i++) {
+            const n1 = safePathNodes[i];
+            const n2 = safePathNodes[i + 1];
+            if (n1 && n2 && n1.lat && n1.lng && n2.lat && n2.lng) {
+                calculatedRoutePolylines.push([
+                    [n1.lat, n1.lng],
+                    [n2.lat, n2.lng],
+                ]);
+                routePoints.push([n1.lat, n1.lng]);
+                routePoints.push([n2.lat, n2.lng]);
+            }
+        }
+    }
+
+    const optimalRoutePolylines = [];
+    if (safeOptimalNodes.length >= 2) {
+        for (let i = 0; i < safeOptimalNodes.length - 1; i++) {
+            const n1 = safeOptimalNodes[i];
+            const n2 = safeOptimalNodes[i + 1];
+            if (n1 && n2 && n1.lat && n1.lng && n2.lat && n2.lng) {
+                optimalRoutePolylines.push([
+                    [n1.lat, n1.lng],
+                    [n2.lat, n2.lng],
+                ]);
+            }
+        }
+    }
+
+    const allPoints = validCities.map(c => [c.latitude, c.longitude]);
+    const defaultCenter = [22.5937, 78.9629];
+    const center = validCities.length > 0 ? [validCities[0].latitude, validCities[0].longitude] : defaultCenter;
 
     return (
         <div className="route-map-container">
-            <div className="map-legend-bar">
-                <span className="legend-item"><span className="legend-dot source"></span> Start</span>
-                <span className="legend-item"><span className="legend-dot stop"></span> Stop</span>
-                <span className="legend-item"><span className="legend-dot destination"></span> End</span>
-                <span className="legend-item"><span className="legend-dot city"></span> Network City</span>
-                {routePolylineCoords.length > 0 && (
-                    <span className="legend-item route-highlight-legend">🔵 Your Path</span>
-                )}
-                {optimalPolylineCoords.length > 0 && (
-                    <span className="legend-item optimal-highlight-legend" style={{ color: '#10b981', fontWeight: 600 }}>🟢 Shortest Direct Path</span>
-                )}
-            </div>
-
             <MapContainer
-                center={defaultCenter}
+                center={center}
                 zoom={5}
                 scrollWheelZoom={true}
                 className="leaflet-map-view"
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <MapBoundsUpdater points={allCoords} />
+                <MapBoundsUpdater routePoints={routePoints} allPoints={allPoints} />
 
-                {/* Render background road network lines */}
-                {networkRoadLines.map((road) => (
+                {/* Neutral background road network */}
+                {allRoadPolylines.map((road) => (
                     <Polyline
                         key={`road-${road.id}`}
                         positions={road.positions}
                         pathOptions={{
-                            color: "#94a3b8",
-                            weight: 2,
-                            dashArray: "4, 6",
-                            opacity: 0.6,
+                            color: "#CBD5E1",
+                            weight: 1.8,
+                            opacity: 0.5,
+                            dashArray: "4, 4",
                         }}
-                    >
-                        <Popup>
-                            <div className="map-popup">
-                                <strong>🛣️ {road.sourceName} ➔ {road.destName}</strong>
-                                <div>Distance: {road.distance} km</div>
-                                <div>Type: {road.isBidirectional ? "Bidirectional" : "One-Way"}</div>
-                            </div>
-                        </Popup>
-                    </Polyline>
+                    />
                 ))}
 
-                {/* Render direct optimal route polyline (dashed green) */}
-                {optimalPolylineCoords.length > 1 && (
+                {/* Optimal direct comparison route */}
+                {optimalRoutePolylines.map((seg, idx) => (
                     <Polyline
-                        positions={optimalPolylineCoords}
+                        key={`optimal-seg-${idx}`}
+                        positions={seg}
                         pathOptions={{
-                            color: "#10b981",
-                            weight: 4,
-                            dashArray: "8, 8",
+                            color: "#10B981",
+                            weight: 3.5,
+                            opacity: 0.7,
+                            dashArray: "6, 6",
+                        }}
+                    />
+                ))}
+
+                {/* Active calculated route */}
+                {calculatedRoutePolylines.map((seg, idx) => (
+                    <Polyline
+                        key={`route-seg-${idx}`}
+                        positions={seg}
+                        pathOptions={{
+                            color: "#2563EB",
+                            weight: 5.5,
                             opacity: 0.95,
-                            lineJoin: "round",
                         }}
                     />
-                )}
+                ))}
 
-                {/* Render active computed user route path polyline - simple, normal solid line */}
-                {routePolylineCoords.length > 1 && (
-                    <Polyline
-                        positions={routePolylineCoords}
-                        pathOptions={{
-                            color: "#2563eb",
-                            weight: 4,
-                            opacity: 0.9,
-                            lineJoin: "round",
-                            lineCap: "round",
-                        }}
-                    />
-                )}
-
-                {/* Render city markers */}
+                {/* Render Markers: ONLY route nodes get special colors */}
                 {validCities.map((city) => {
-                    let pinType = "city";
-                    if (Number(city.id) === Number(sourceCityId)) {
+                    const isSource = Number(city.id) === Number(sourceCityId);
+                    const isDestination = Number(city.id) === Number(destinationCityId);
+                    const isStop = stopCityIds.some((sId) => Number(sId) === Number(city.id));
+                    const isInPath = pathCityIds.has(Number(city.id)) || (city.name && pathCityNames.has(city.name.toLowerCase().trim()));
+
+                    let pinType = "unselected";
+
+                    if (isSource) {
                         pinType = "source";
-                    } else if (Number(city.id) === Number(destinationCityId)) {
+                    } else if (isDestination) {
                         pinType = "destination";
-                    } else if (stopCityIds.some((sId) => Number(sId) === Number(city.id))) {
+                    } else if (isStop) {
                         pinType = "stop";
+                    } else if (isInPath) {
+                        pinType = "path-node";
+                    } else if (!hasActiveRoute && (sourceCityId || destinationCityId)) {
+                        pinType = "unselected";
                     }
 
                     return (
@@ -275,7 +303,7 @@ function RouteMap({
                         >
                             <Popup>
                                 <div className="map-popup">
-                                    <h3>🏙️ {city.name}</h3>
+                                    <h3>{city.name}</h3>
                                     <p className="coords-text">
                                         Lat: {Number(city.latitude).toFixed(4)}, Lng: {Number(city.longitude).toFixed(4)}
                                     </p>

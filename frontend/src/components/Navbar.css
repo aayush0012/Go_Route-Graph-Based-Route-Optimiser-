@@ -1,59 +1,310 @@
-.navbar{
-
-    height:70px;
-
-    background:white;
-
-    border-bottom:1px solid #E5E7EB;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:space-between;
-
-    padding:0 50px;
-
+/* GoRoute Precision Header Navigation */
+.goroute-navbar-header {
+    height: 72px;
+    background: #ffffff;
+    border-bottom: 1px solid #EDEDF0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
 }
 
-.logo{
-
-    font-size:22px;
-
-    font-weight:700;
-
-    color:#2563EB;
-
+.goroute-navbar-container {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.nav-links{
-
-    display:flex;
-
-    gap:30px;
-
+/* Brand */
+.goroute-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    user-select: none;
 }
 
-.nav-links a{
-
-    text-decoration:none;
-
-    color:#4B5563;
-
-    font-weight:500;
-
-    transition:.2s;
-
+.brand-text {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #125541; /* Deep emerald green */
+    transition: opacity 0.15s ease;
 }
 
-.nav-links a:hover{
-
-    color:#2563EB;
-
+.goroute-brand:hover .brand-text {
+    opacity: 0.9;
 }
 
-.active{
+/* Navigation Links */
+.goroute-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
 
-    color:#2563EB !important;
+.goroute-nav-item {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #4A5568;
+    text-decoration: none;
+    position: relative;
+    padding: 6px 2px;
+    transition: color 0.15s ease;
+}
 
+.goroute-nav-item:hover {
+    color: #0F172A;
+}
+
+.goroute-nav-item.active {
+    color: #0F172A;
+    font-weight: 600;
+}
+
+.goroute-nav-item.active::after {
+    content: "";
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #125541;
+    border-radius: 2px;
+}
+
+/* Actions & Profile */
+.goroute-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+}
+
+.nav-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #525E75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.nav-icon-btn:hover,
+.nav-icon-btn.active {
+    background: #F4F6F8;
+    color: #111827;
+    border-color: #E2E8F0;
+}
+
+.notif-pulse {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 7px;
+    height: 7px;
+    background: #10B981;
+    border-radius: 50%;
+    border: 1.5px solid #ffffff;
+}
+
+/* User Avatar */
+.user-avatar-wrapper {
+    position: relative;
+}
+
+.user-avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #D8E0DC;
+    background: #F4F7F5;
+    color: #1B4D3E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-avatar-btn:hover {
+    border-color: #125541;
+    background: #EAF3EF;
+}
+
+.avatar-initials {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* Dropdown Flyouts */
+.nav-flyout {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+    width: 270px;
+    padding: 8px;
+    z-index: 1100;
+    animation: flyoutFade 0.15s ease-out;
+}
+
+@keyframes flyoutFade {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.flyout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.flyout-header h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+}
+
+.status-chip {
+    font-size: 11px;
+    font-weight: 600;
+    color: #059669;
+    background: #ECFDF5;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.notif-list {
+    padding: 6px 0;
+}
+
+.notif-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+
+.notif-item:hover {
+    background: #F8FAFC;
+}
+
+.notif-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.notif-indicator.neutral {
+    background: #94A3B8;
+}
+
+.notif-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1E293B;
+    margin: 0 0 2px;
+}
+
+.notif-meta {
+    font-size: 11.5px;
+    color: #64748B;
+    margin: 0;
+}
+
+/* User Menu Flyout */
+.user-menu-header {
+    padding: 12px 14px 8px;
+}
+
+.user-menu-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 2px;
+}
+
+.user-menu-email {
+    font-size: 12px;
+    color: #64748B;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-menu-divider {
+    height: 1px;
+    background: #F1F5F9;
+    margin: 6px 0;
+}
+
+.user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.user-menu-item:hover {
+    background: #F8FAFC;
+    color: #0F172A;
+}
+
+.user-menu-item.logout-action {
+    color: #DC2626;
+}
+
+.user-menu-item.logout-action:hover {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+@media (max-width: 768px) {
+    .goroute-navbar-container {
+        padding: 0 20px;
+    }
+    .goroute-nav-links {
+        display: none;
+    }
 }

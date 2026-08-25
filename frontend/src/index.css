@@ -1,15 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-* {
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background-color: #F7F3ED;
-    color: #333;
+:root {
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --color-brand-emerald: #0D382B;
+    --color-brand-emerald-hover: #08241C;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4B5563;
+    --color-text-muted: #6B7280;
+    --color-border: #E5E7EB;
+    --color-bg-subtle: #F9FAFB;
+    --color-bg-page: #FFFFFF;
+}
+
+html, body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
 }
 
 a {
@@ -20,6 +36,8 @@ a {
 button {
     cursor: pointer;
     font-family: inherit;
+    border: none;
+    background: none;
 }
 
 input,
