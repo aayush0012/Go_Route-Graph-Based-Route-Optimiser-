@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NetworkBackground from "../components/NetworkBackground";
 import api from "../services/api";
 import "./Login.css";
 
@@ -10,10 +11,12 @@ function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isGuestLoading, setIsGuestLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMsg("");
 
         try {
             const response = await api.post("/login", {
@@ -30,7 +33,7 @@ function Login() {
         } catch (error) {
             const detail = error.response?.data?.detail;
             const msg = typeof detail === "string" ? detail : (error.message || "Login Failed");
-            alert(msg);
+            setErrorMsg(msg);
         } finally {
             setIsLoading(false);
         }
@@ -38,6 +41,7 @@ function Login() {
 
     const handleGuestLogin = async () => {
         setIsGuestLoading(true);
+        setErrorMsg("");
         try {
             const response = await api.post("/login/guest");
 
@@ -50,7 +54,7 @@ function Login() {
         } catch (error) {
             const detail = error.response?.data?.detail;
             const msg = typeof detail === "string" ? detail : (error.message || "Guest Login Failed");
-            alert(msg);
+            setErrorMsg(msg);
         } finally {
             setIsGuestLoading(false);
         }
@@ -58,11 +62,16 @@ function Login() {
 
     return (
         <div className="login-wrapper">
+            {/* Ambient Background Animation */}
+            <NetworkBackground />
+
             <div className="login-card">
                 <div className="login-header">
                     <h1 className="login-brand">GoRoute</h1>
-                    <p className="login-subtitle">Sign in to your account to continue</p>
+                    <p className="login-subtitle">Sign in to your logistics network workspace</p>
                 </div>
+
+                {errorMsg && <div className="login-error-banner">{errorMsg}</div>}
 
                 <form className="login-form" onSubmit={handleLogin}>
                     <div className="form-group">
@@ -70,7 +79,7 @@ function Login() {
                         <input
                             id="email"
                             type="email"
-                            placeholder="name@example.com"
+                            placeholder="name@company.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -90,7 +99,7 @@ function Login() {
                     </div>
 
                     <button type="submit" className="btn-primary-submit" disabled={isLoading}>
-                        {isLoading ? "Signing in..." : "Sign In"}
+                        {isLoading ? "Signing in..." : "Sign In to Workspace"}
                     </button>
                 </form>
 
@@ -104,7 +113,7 @@ function Login() {
                     onClick={handleGuestLogin}
                     disabled={isGuestLoading}
                 >
-                    {isGuestLoading ? "Entering..." : "Continue as Guest"}
+                    {isGuestLoading ? "Entering Workspace..." : "Continue as Guest"}
                 </button>
 
                 <div className="login-footer">

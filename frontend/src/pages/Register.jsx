@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import NetworkBackground from "../components/NetworkBackground";
 import api from "../services/api";
-import "./Register.css";
+import "./Login.css";
 
 function Register() {
     const navigate = useNavigate();
@@ -10,10 +11,12 @@ function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMsg("");
 
         try {
             await api.post("/register", {
@@ -22,12 +25,11 @@ function Register() {
                 password,
             });
 
-            alert("Registration Successful");
             navigate("/");
         } catch (error) {
-            alert(
-                error.response?.data?.detail || "Registration Failed"
-            );
+            const detail = error.response?.data?.detail;
+            const msg = typeof detail === "string" ? detail : (error.message || "Registration Failed");
+            setErrorMsg(msg);
         } finally {
             setIsLoading(false);
         }
@@ -35,19 +37,24 @@ function Register() {
 
     return (
         <div className="login-wrapper">
+            {/* Ambient Background Animation */}
+            <NetworkBackground />
+
             <div className="login-card">
                 <div className="login-header">
                     <h1 className="login-brand">GoRoute</h1>
-                    <p className="login-subtitle">Create a new account to get started</p>
+                    <p className="login-subtitle">Create your network workspace account</p>
                 </div>
+
+                {errorMsg && <div className="login-error-banner">{errorMsg}</div>}
 
                 <form className="login-form" onSubmit={handleRegister}>
                     <div className="form-group">
-                        <label htmlFor="username">Username</label>
+                        <label htmlFor="username">Full Name / Username</label>
                         <input
                             id="username"
                             type="text"
-                            placeholder="username123"
+                            placeholder="johndoe"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
@@ -59,7 +66,7 @@ function Register() {
                         <input
                             id="email"
                             type="email"
-                            placeholder="name@example.com"
+                            placeholder="name@company.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -79,7 +86,7 @@ function Register() {
                     </div>
 
                     <button type="submit" className="btn-primary-submit" disabled={isLoading}>
-                        {isLoading ? "Creating Account..." : "Create Account"}
+                        {isLoading ? "Creating Account..." : "Create Workspace Account"}
                     </button>
                 </form>
 
