@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -44,57 +44,49 @@ const KNOWN_CITY_COORDS = {
     "kochi": [9.9312, 76.2673],
     "indore": [22.7196, 75.8577],
     "bhopal": [23.2599, 77.4126],
-    "patna": [25.5941, 85.1376],
     "nagpur": [21.1458, 79.0882],
-    "vadodara": [22.3072, 73.1812],
+    "patna": [25.5941, 85.1376],
     "visakhapatnam": [17.6868, 83.2185],
-    "coimbatore": [11.0168, 76.9558],
-    "madurai": [9.9252, 78.1198],
+    "vadodara": [22.3072, 73.1812],
     "guwahati": [26.1445, 91.7362],
-    "ranchi": [23.3441, 85.3096],
-    "shimla": [31.1048, 77.1734],
-    "dehradun": [30.3165, 78.0322],
-    "amritsar": [31.6340, 74.8723],
-    "jodhpur": [26.2389, 73.0243],
-    "udaipur": [24.5854, 73.7125],
-    "kanpur": [26.4499, 80.3319],
-    "nashik": [19.9975, 73.7898],
-    "thiruvananthapuram": [8.5241, 76.9366],
+    "coimbatore": [11.0168, 76.9558],
 };
 
-// Node Marker Generator: ONLY active route nodes have special colors
-const createCustomIcon = (label, type = "unselected") => {
-    const shortLabel = label.split("(")[0].trim();
+const createNodeIcon = (cityName, role, isAnimatedCurrent = false) => {
+    const isMuted = role === "unselected";
 
-    if (type === "unselected") {
+    if (isMuted) {
         return L.divIcon({
             className: "unselected-node-container",
             html: `
-                <div class="node-marker-wrapper unselected" title="${shortLabel}">
+                <div class="node-marker-wrapper unselected" title="${cityName}">
                     <div class="unselected-dot"></div>
                 </div>
             `,
             iconSize: [12, 12],
             iconAnchor: [6, 6],
-            popupAnchor: [0, -8],
+            popupAnchor: [0, -6],
         });
     }
 
     let specialBadge = "";
-    if (type === "source") {
-        specialBadge = `<span class="badge-tag source-tag">START</span>`;
-    } else if (type === "destination") {
-        specialBadge = `<span class="badge-tag dest-tag">END</span>`;
-    } else if (type === "stop") {
-        specialBadge = `<span class="badge-tag stop-tag">STOP</span>`;
-    } else if (type === "path-node") {
-        specialBadge = `<span class="badge-tag path-tag">VIA</span>`;
+    if (role === "source") {
+        specialBadge = `<span class="badge-tag source-tag">Origin</span>`;
+    } else if (role === "destination") {
+        specialBadge = `<span class="badge-tag dest-tag">Dest</span>`;
+    } else if (role === "stop") {
+        specialBadge = `<span class="badge-tag stop-tag">Stop</span>`;
+    } else if (role === "path-node") {
+        specialBadge = `<span class="badge-tag path-tag">Transit</span>`;
     }
+
+    const shortLabel = cityName.replace(/\s*\([^)]*\)/g, "").trim();
+    const animClass = isAnimatedCurrent ? "current-frontier-node" : "";
 
     return L.divIcon({
         className: "compact-node-icon-container",
         html: `
-            <div class="node-marker-wrapper ${type}">
+            <div class="node-marker-wrapper ${role} ${animClass}">
                 <div class="node-halo">
                     <div class="node-dot">
                         <span class="inner-core"></span>
@@ -109,6 +101,21 @@ const createCustomIcon = (label, type = "unselected") => {
         iconSize: [90, 36],
         iconAnchor: [45, 10],
         popupAnchor: [0, -14],
+    });
+};
+
+// Moving Transit Freight Marker
+const createFreightMarkerIcon = () => {
+    return L.divIcon({
+        className: "freight-transit-icon-container",
+        html: `
+            <div class="freight-pulse-beacon">
+                <div class="freight-pulse-ring"></div>
+                <div class="freight-pulse-core">🚚</div>
+            </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
     });
 };
 
@@ -127,6 +134,13 @@ function RouteMap({
     const safeRoads = Array.isArray(roads) ? roads : [];
     const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
     const safeOptimalNodes = Array.isArray(optimalPathNodes) ? optimalPathNodes : [];
+
+    // Algorithm Traversal Animation state
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [animationStep, setAnimationStep] = useState(0);
+    const [animSpeed, setAnimSpeed] = useState(1200); // ms per step
+    const [freightPosition, setFreightPosition] = useState(null);
+    const animTimerRef = useRef(null);
 
     const validCities = safeCities.map((c) => {
         if (!c) return null;
@@ -171,6 +185,7 @@ function RouteMap({
         return null;
     }).filter(Boolean);
 
+    // Build segments list
     const calculatedRoutePolylines = [];
     const routePoints = [];
 
@@ -200,19 +215,69 @@ function RouteMap({
         }
     }
 
-    const optimalRoutePolylines = [];
-    if (safeOptimalNodes.length >= 2) {
-        for (let i = 0; i < safeOptimalNodes.length - 1; i++) {
-            const n1 = safeOptimalNodes[i];
-            const n2 = safeOptimalNodes[i + 1];
-            if (n1 && n2 && n1.lat && n1.lng && n2.lat && n2.lng) {
-                optimalRoutePolylines.push([
-                    [n1.lat, n1.lng],
-                    [n2.lat, n2.lng],
-                ]);
-            }
+    // Animation loop
+    const totalSteps = calculatedRoutePolylines.length;
+
+    useEffect(() => {
+        if (!isAnimating || totalSteps === 0) {
+            clearInterval(animTimerRef.current);
+            return;
         }
-    }
+
+        animTimerRef.current = setInterval(() => {
+            setAnimationStep((prev) => {
+                const nextStep = prev + 1;
+                if (nextStep > totalSteps) {
+                    setIsAnimating(false);
+                    return totalSteps;
+                }
+                // Set freight marker position to current node
+                const activePoly = calculatedRoutePolylines[nextStep - 1];
+                if (activePoly && activePoly[1]) {
+                    setFreightPosition(activePoly[1]);
+                }
+                return nextStep;
+            });
+        }, animSpeed);
+
+        return () => clearInterval(animTimerRef.current);
+    }, [isAnimating, totalSteps, animSpeed, calculatedRoutePolylines]);
+
+    // Reset animation when new route loads
+    useEffect(() => {
+        if (hasActiveRoute) {
+            setAnimationStep(totalSteps);
+            setIsAnimating(false);
+            setFreightPosition(null);
+        }
+    }, [hasActiveRoute, totalSteps]);
+
+    const startAnimation = () => {
+        setAnimationStep(1);
+        setIsAnimating(true);
+        if (calculatedRoutePolylines[0]) {
+            setFreightPosition(calculatedRoutePolylines[0][0]);
+        }
+    };
+
+    const togglePlay = () => {
+        if (animationStep >= totalSteps) {
+            startAnimation();
+        } else {
+            setIsAnimating(!isAnimating);
+        }
+    };
+
+    const resetAnimation = () => {
+        setIsAnimating(false);
+        setAnimationStep(totalSteps);
+        setFreightPosition(null);
+    };
+
+    // Filter polylines to show based on animation step
+    const visibleRoutePolylines = isAnimating || animationStep < totalSteps
+        ? calculatedRoutePolylines.slice(0, animationStep)
+        : calculatedRoutePolylines;
 
     const allPoints = validCities.map(c => [c.latitude, c.longitude]);
     const defaultCenter = [22.5937, 78.9629];
@@ -247,88 +312,120 @@ function RouteMap({
                     />
                 ))}
 
-                {/* Optimal direct comparison route */}
-                {optimalRoutePolylines.map((seg, idx) => (
+                {/* Active calculated route polylines with animated pulse glow */}
+                {visibleRoutePolylines.map((seg, idx) => (
                     <Polyline
-                        key={`optimal-seg-${idx}`}
+                        key={`calc-seg-${idx}`}
                         positions={seg}
                         pathOptions={{
-                            color: "#10B981",
-                            weight: 3.5,
-                            opacity: 0.7,
-                            dashArray: "6, 6",
+                            color: "#059669",
+                            weight: 5,
+                            opacity: 0.9,
                         }}
                     />
                 ))}
 
-                {/* Active calculated route */}
-                {calculatedRoutePolylines.map((seg, idx) => (
-                    <Polyline
-                        key={`route-seg-${idx}`}
-                        positions={seg}
-                        pathOptions={{
-                            color: "#2563EB",
-                            weight: 5.5,
-                            opacity: 0.95,
-                        }}
+                {/* Moving Freight Vehicle Icon during animation */}
+                {freightPosition && (
+                    <Marker
+                        position={freightPosition}
+                        icon={createFreightMarkerIcon()}
+                        zIndexOffset={1000}
                     />
-                ))}
+                )}
 
-                {/* Render Markers: ONLY route nodes get special colors */}
+                {/* City Nodes */}
                 {validCities.map((city) => {
-                    const isSource = Number(city.id) === Number(sourceCityId);
-                    const isDestination = Number(city.id) === Number(destinationCityId);
-                    const isStop = stopCityIds.some((sId) => Number(sId) === Number(city.id));
-                    const isInPath = pathCityIds.has(Number(city.id)) || (city.name && pathCityNames.has(city.name.toLowerCase().trim()));
+                    const idNum = Number(city.id);
+                    const nameKey = city.name ? city.name.toLowerCase().trim() : "";
 
-                    let pinType = "unselected";
+                    const isSource = sourceCityId && idNum === Number(sourceCityId);
+                    const isDest = destinationCityId && idNum === Number(destinationCityId);
+                    const isStop = stopCityIds && stopCityIds.map(Number).includes(idNum);
+                    const isPathNode = pathCityIds.has(idNum) || pathCityNames.has(nameKey);
 
-                    if (isSource) {
-                        pinType = "source";
-                    } else if (isDestination) {
-                        pinType = "destination";
-                    } else if (isStop) {
-                        pinType = "stop";
-                    } else if (isInPath) {
-                        pinType = "path-node";
-                    } else if (!hasActiveRoute && (sourceCityId || destinationCityId)) {
-                        pinType = "unselected";
-                    }
+                    let role = "unselected";
+                    if (isSource) role = "source";
+                    else if (isDest) role = "destination";
+                    else if (isStop) role = "stop";
+                    else if (isPathNode) role = "path-node";
+
+                    const isCurrentFrontier = isAnimating && freightPosition && freightPosition[0] === city.latitude && freightPosition[1] === city.longitude;
 
                     return (
                         <Marker
-                            key={`city-marker-${city.id}`}
+                            key={`city-${city.id}`}
                             position={[city.latitude, city.longitude]}
-                            icon={createCustomIcon(city.name, pinType)}
+                            icon={createNodeIcon(city.name, role, isCurrentFrontier)}
                         >
-                            <Popup>
-                                <div className="map-popup">
-                                    <h3>{city.name}</h3>
-                                    <p className="coords-text">
-                                        Lat: {Number(city.latitude).toFixed(4)}, Lng: {Number(city.longitude).toFixed(4)}
-                                    </p>
-                                    {onSelectCity && (
-                                        <div className="popup-actions">
-                                            <button
-                                                className="btn-select-start"
-                                                onClick={() => onSelectCity(city.id, "source")}
-                                            >
-                                                Set Start 🟢
-                                            </button>
-                                            <button
-                                                className="btn-select-end"
-                                                onClick={() => onSelectCity(city.id, "destination")}
-                                            >
-                                                Set End 🔴
-                                            </button>
-                                        </div>
-                                    )}
+                            <Popup className="map-popup">
+                                <h3>{city.name}</h3>
+                                <p className="coords-text">
+                                    {city.latitude.toFixed(4)}° N, {city.longitude.toFixed(4)}° E
+                                </p>
+                                <div className="popup-actions">
+                                    <button
+                                        type="button"
+                                        className="btn-select-start"
+                                        onClick={() => onSelectCity && onSelectCity(city.id, "source")}
+                                    >
+                                        Set Origin
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn-select-end"
+                                        onClick={() => onSelectCity && onSelectCity(city.id, "destination")}
+                                    >
+                                        Set Dest
+                                    </button>
                                 </div>
                             </Popup>
                         </Marker>
                     );
                 })}
             </MapContainer>
+
+            {/* Algorithm Traversal Animation Floating Controller */}
+            {hasActiveRoute && (
+                <div className="traversal-animator-dock">
+                    <button
+                        type="button"
+                        className="anim-play-btn"
+                        onClick={togglePlay}
+                        title={isAnimating ? "Pause Traversal" : "Play Traversal"}
+                    >
+                        {isAnimating ? "⏸ Pause" : "▶ Simulate Route Traversal"}
+                    </button>
+
+                    <div className="anim-progress-text">
+                        <span>Leg {animationStep}/{totalSteps}</span>
+                    </div>
+
+                    <button
+                        type="button"
+                        className={`anim-speed-btn ${animSpeed === 1200 ? "active" : ""}`}
+                        onClick={() => setAnimSpeed(1200)}
+                    >
+                        1x
+                    </button>
+                    <button
+                        type="button"
+                        className={`anim-speed-btn ${animSpeed === 600 ? "active" : ""}`}
+                        onClick={() => setAnimSpeed(600)}
+                    >
+                        2x
+                    </button>
+
+                    <button
+                        type="button"
+                        className="anim-reset-btn"
+                        onClick={resetAnimation}
+                        title="Show Full Route"
+                    >
+                        ⏮ Reset
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -291,3 +291,134 @@
 .btn-select-end:hover {
     background: #DC2626;
 }
+
+/* ========================================================
+   ALGORITHM TRAVERSAL ANIMATION DOCK & FREIGHT MARKER
+   ======================================================== */
+.traversal-animator-dock {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(10px);
+    padding: 6px 12px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    color: #FFFFFF;
+}
+
+.anim-play-btn {
+    background: #10B981;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.anim-play-btn:hover {
+    background: #059669;
+}
+
+.anim-progress-text {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #94A3B8;
+    padding: 0 4px;
+    white-space: nowrap;
+}
+
+.anim-speed-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #CBD5E1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.anim-speed-btn.active {
+    background: #FFFFFF;
+    color: #0F172A;
+}
+
+.anim-reset-btn {
+    background: transparent;
+    color: #94A3B8;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.anim-reset-btn:hover {
+    color: #FFFFFF;
+}
+
+/* Moving Freight Marker Beacon */
+.freight-transit-icon-container {
+    background: transparent !important;
+    border: none !important;
+}
+
+.freight-pulse-beacon {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.freight-pulse-core {
+    font-size: 18px;
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    animation: bounceVehicle 0.8s ease infinite alternate;
+}
+
+@keyframes bounceVehicle {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-3px); }
+}
+
+.freight-pulse-ring {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.4);
+    border: 2px solid #10B981;
+    animation: ringExpand 1.4s ease-out infinite;
+    z-index: 1;
+}
+
+@keyframes ringExpand {
+    0% {
+        transform: scale(0.6);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+.current-frontier-node .node-dot {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.5), 0 0 16px #10B981 !important;
+}
+

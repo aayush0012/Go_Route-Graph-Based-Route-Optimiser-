@@ -1,4 +1,4 @@
-/* GoRoute Clean Modern Dashboard Layout */
+/* GoRoute Clean Modern Dashboard Layout - Monochrome, Crisp & Interactive */
 .goroute-home-layout {
     min-height: 100vh;
     display: flex;
@@ -12,20 +12,35 @@
 /* Hero Container */
 .goroute-hero-container {
     flex: 1;
-    max-width: 1280px;
+    max-width: 1180px;
     width: 100%;
     margin: 0 auto;
-    padding: 72px 36px 84px;
+    padding: 60px 24px 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Continuous Scroll Reveal Appear / Disappear Styles */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 /* Hero Header Block */
 .hero-header-block {
     text-align: center;
     max-width: 760px;
-    margin-bottom: 64px;
+    margin-bottom: 50px;
 }
 
 .hero-title {
@@ -36,6 +51,7 @@
     color: #0F172A;
     line-height: 1.15;
     margin: 0 0 16px;
+    transition: letter-spacing 0.3s ease;
 }
 
 .hero-description {
@@ -44,89 +60,98 @@
     font-weight: 400;
     line-height: 1.6;
     color: #475569;
-    max-width: 600px;
+    max-width: 620px;
     margin: 0 auto;
 }
 
-/* 3 Features Grid */
+/* 3 Features Grid with Hover Animation */
 .features-grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
     width: 100%;
-    max-width: 1180px;
-    border-top: 1px solid #ECEEF1;
-    border-bottom: 1px solid #ECEEF1;
+    max-width: 1140px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-bottom: 70px;
 }
 
 .feature-card {
-    padding: 48px 36px;
-    background: #FFFFFF;
+    padding: 42px 32px;
+    background: rgba(255, 255, 255, 0.98);
     display: flex;
     flex-direction: column;
     cursor: pointer;
     position: relative;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
-    border-right: 1px solid #ECEEF1;
+    border-right: 1px solid #E2E8F0;
 }
 
-.feature-card:first-child {
-    border-left: 1px solid #ECEEF1;
+.feature-card:last-child {
+    border-right: none;
 }
 
 .feature-card:hover {
-    background-color: #FAFCFB;
+    background-color: #F8FAFC;
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.08);
+    z-index: 2;
 }
 
-.feature-card:focus-visible {
-    box-shadow: inset 0 0 0 2px #125541;
-}
-
-/* Feature Icon */
 .feature-icon-wrapper {
-    margin-bottom: 24px;
-    color: #125541; /* Emerald green matching the screenshot */
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background-color: #F1F5F9;
+    border: 1px solid #E2E8F0;
     display: flex;
     align-items: center;
-    height: 32px;
+    justify-content: center;
+    color: #0F172A;
+    margin-bottom: 24px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.feature-svg {
-    color: #125541;
-    transition: transform 0.22s ease;
+.feature-card:hover .feature-icon-wrapper {
+    background-color: #0F172A;
+    color: #FFFFFF;
+    border-color: #0F172A;
+    transform: scale(1.08) rotate(-2deg);
 }
 
-.feature-card:hover .feature-svg {
-    transform: translateY(-2px);
-}
-
-/* Card Content */
 .feature-card-title {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.025em;
     color: #0F172A;
-    margin: 0 0 14px;
+    margin: 0 0 12px;
+    transition: color 0.2s ease;
+}
+
+.feature-card:hover .feature-card-title {
+    color: #000000;
 }
 
 .feature-card-desc {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 14.5px;
+    font-size: 14px;
     font-weight: 400;
     line-height: 1.58;
-    color: #475569;
-    margin: 0 0 32px;
-    flex-grow: 1;
+    color: #64748B;
+    margin: 0 0 28px;
+    flex: 1;
 }
 
-/* Action Link */
 .feature-action-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 14.5px;
+    font-size: 13.5px;
     font-weight: 600;
     color: #0F172A;
     margin-top: auto;
@@ -136,15 +161,304 @@
 .action-arrow {
     font-family: "Inter", sans-serif;
     font-size: 16px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .feature-card:hover .action-arrow {
-    transform: translateX(5px);
+    transform: translateX(8px);
 }
 
-.feature-card:hover .feature-action-link {
-    color: #125541;
+/* ========================================================
+   ALTERNATING 2-COLUMN EDITORIAL SECTIONS (CLEAN & MONOCHROME)
+   ======================================================== */
+.editorial-split-section {
+    width: 100%;
+    max-width: 1140px;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 64px;
+    padding: 72px 0;
+    border-top: 1px solid #ECEEF1;
+    align-items: start;
+}
+
+.split-left-lead {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.why-goroute-giant-title {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 44px;
+    font-weight: 900;
+    color: #0F172A;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin: 0 0 16px;
+}
+
+.section-heading {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin: 0 0 16px;
+}
+
+.split-lead-para {
+    font-size: 16.5px;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.6;
+    margin: 0 0 12px;
+}
+
+.split-sub-para {
+    font-size: 14.5px;
+    font-weight: 400;
+    color: #64748B;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.split-sub-para strong {
+    color: #0F172A;
+    font-weight: 700;
+}
+
+/* Section 1: Benefit Rows with Hover Micro-Animations */
+.split-right-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.benefit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+}
+
+.benefit-row:hover {
+    background-color: #F8FAFC;
+    transform: translateX(6px);
+}
+
+.benefit-num {
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #94A3B8;
+    margin-top: 2px;
+    flex-shrink: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.benefit-row:hover .benefit-num {
+    color: #0F172A;
+    transform: scale(1.15);
+}
+
+.benefit-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.benefit-heading {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.benefit-row:hover .benefit-heading {
+    color: #000000;
+}
+
+.benefit-detail {
+    font-size: 14px;
+    color: #64748B;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Section 2: Timeline Flow List with Hover Animation */
+.timeline-flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+}
+
+.timeline-item:hover {
+    background-color: #F8FAFC;
+    transform: translateX(6px);
+}
+
+.timeline-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #0F172A;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.timeline-item:hover .timeline-marker {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.15);
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.timeline-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.timeline-item:hover .timeline-title {
+    color: #000000;
+}
+
+.timeline-desc {
+    font-size: 14px;
+    color: #64748B;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Section 3: Industry Use List with Hover Animation */
+.industry-use-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.industry-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border-bottom: 1px dashed #E2E8F0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+}
+
+.industry-item:hover {
+    background-color: #F8FAFC;
+    transform: translateX(6px);
+}
+
+.industry-item:last-child {
+    border-bottom: none;
+}
+
+.industry-title {
+    font-size: 17.5px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.industry-item:hover .industry-title {
+    color: #000000;
+}
+
+.industry-desc {
+    font-size: 14px;
+    color: #64748B;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ========================================================
+   CTA BANNER SECTION with Hover Animation
+   ======================================================== */
+.cta-banner-section {
+    width: 100%;
+    max-width: 1140px;
+    background: #0F172A;
+    border-radius: 16px;
+    padding: 48px 36px;
+    text-align: center;
+    color: #FFFFFF;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+    margin: 40px 0 20px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cta-banner-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.cta-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 10px;
+}
+
+.cta-desc {
+    font-size: 15px;
+    color: #94A3B8;
+    max-width: 540px;
+    margin: 0 auto 24px;
+}
+
+.btn-launch-cta {
+    display: inline-block;
+    padding: 12px 28px;
+    background: #FFFFFF;
+    color: #0F172A;
+    font-size: 14.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-launch-cta:hover {
+    background: #F1F5F9;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
 }
 
 /* ========================================================
@@ -152,14 +466,17 @@
    ======================================================== */
 .goroute-footer {
     width: 100%;
-    background: #FFFFFF;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
     border-top: 1px solid #ECEEF1;
     margin-top: auto;
     padding: 28px 36px;
+    position: relative;
+    z-index: 1;
 }
 
 .goroute-footer-inner {
-    max-width: 1180px;
+    max-width: 1140px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -177,7 +494,7 @@
 .footer-brand-name {
     font-size: 15px;
     font-weight: 700;
-    color: #125541;
+    color: #0F172A;
     letter-spacing: -0.02em;
 }
 
@@ -200,72 +517,32 @@
 
 .footer-nav-link {
     font-size: 13.5px;
+    color: #475569;
     font-weight: 500;
-    color: #64748B;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
     transition: color 0.15s ease;
 }
 
 .footer-nav-link:hover {
-    color: #125541;
+    color: #0F172A;
 }
 
-/* ========================================================
-   RESPONSIVE DESIGN
-   ======================================================== */
-@media (max-width: 1024px) {
+/* Responsive */
+@media (max-width: 960px) {
     .features-grid-container {
         grid-template-columns: 1fr;
-        border: 1px solid #ECEEF1;
-        border-radius: 12px;
-        overflow: hidden;
     }
-
     .feature-card {
         border-right: none;
-        border-bottom: 1px solid #ECEEF1;
+        border-bottom: 1px solid #E2E8F0;
     }
-
-    .feature-card:last-child {
-        border-bottom: none;
+    .editorial-split-section {
+        grid-template-columns: 1fr;
+        gap: 32px;
     }
-
-    .feature-card:first-child {
-        border-left: none;
+    .why-goroute-giant-title {
+        font-size: 34px;
     }
-}
-
-@media (max-width: 640px) {
-    .goroute-hero-container {
-        padding: 48px 20px;
-    }
-
-    .hero-title {
-        font-size: 32px;
-    }
-
-    .hero-description {
-        font-size: 15px;
-    }
-
-    .feature-card {
-        padding: 32px 24px;
-    }
-
-    .goroute-footer {
-        padding: 24px 20px;
-    }
-
-    .goroute-footer-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .footer-right {
-        gap: 16px;
+    .section-heading {
+        font-size: 26px;
     }
 }
