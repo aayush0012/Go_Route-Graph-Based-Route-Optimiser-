@@ -64,6 +64,24 @@ const KNOWN_CITY_COORDS = {
     "coimbatore": [11.0168, 76.9558],
 };
 
+export const getCoordinatesForCityName = (rawName) => {
+    if (!rawName) return null;
+    const lower = rawName.toLowerCase().trim();
+    if (KNOWN_CITY_COORDS[lower]) return KNOWN_CITY_COORDS[lower];
+
+    // Strip parentheses e.g. "Delhi NCR (North Mega-Hub)" -> "delhi ncr"
+    const noParens = lower.replace(/\s*\([^)]*\)/g, "").trim();
+    if (KNOWN_CITY_COORDS[noParens]) return KNOWN_CITY_COORDS[noParens];
+
+    // Match substrings
+    for (const [cityName, coords] of Object.entries(KNOWN_CITY_COORDS)) {
+        if (lower.includes(cityName) || noParens.includes(cityName)) {
+            return coords;
+        }
+    }
+    return null;
+};
+
 const createNodeIcon = (cityName, role, isAnimatedCurrent = false) => {
     const isMuted = role === "unselected";
 
@@ -153,9 +171,9 @@ function RouteMap({
             let lng = c.longitude;
 
             if ((lat === null || lng === null || isNaN(lat) || isNaN(lng)) && c.name) {
-                const key = c.name.toLowerCase().trim();
-                if (KNOWN_CITY_COORDS[key]) {
-                    [lat, lng] = KNOWN_CITY_COORDS[key];
+                const coords = getCoordinatesForCityName(c.name);
+                if (coords) {
+                    [lat, lng] = coords;
                 }
             }
 
@@ -187,9 +205,9 @@ function RouteMap({
                     lng = cityMap[n.id].longitude;
                 }
                 if ((lat == null || isNaN(lat)) && n.name) {
-                    const key = n.name.toLowerCase().trim();
-                    if (KNOWN_CITY_COORDS[key]) {
-                        [lat, lng] = KNOWN_CITY_COORDS[key];
+                    const fallback = getCoordinatesForCityName(n.name);
+                    if (fallback) {
+                        [lat, lng] = fallback;
                     }
                 }
                 return (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) ? [lat, lng] : null;
@@ -201,17 +219,15 @@ function RouteMap({
         // 2. Second priority: from routeSegments
         if (routeSegments && routeSegments.length > 0) {
             const coords = [];
-            routeSegments.forEach((seg, idx) => {
+            routeSegments.forEach((seg) => {
                 let s = seg.source_coords;
                 let d = seg.dest_coords;
 
                 if (!s && seg.source) {
-                    const c = validCities.find(x => x.name && x.name.toLowerCase().trim() === seg.source.toLowerCase().trim());
-                    if (c) s = [c.latitude, c.longitude];
+                    s = getCoordinatesForCityName(seg.source);
                 }
                 if (!d && seg.destination) {
-                    const c = validCities.find(x => x.name && x.name.toLowerCase().trim() === seg.destination.toLowerCase().trim());
-                    if (c) d = [c.latitude, c.longitude];
+                    d = getCoordinatesForCityName(seg.destination);
                 }
 
                 if (s && d && !isNaN(s[0]) && !isNaN(d[0])) {
@@ -223,7 +239,7 @@ function RouteMap({
         }
 
         return [];
-    }, [safePathNodes, routeSegments, validCities, cityMap]);
+    }, [safePathNodes, routeSegments, cityMap]);
 
     const hasActiveRoute = activeRouteCoordinates.length >= 2;
     const pathCityIds = new Set(safePathNodes.map(n => Number(n.id)));

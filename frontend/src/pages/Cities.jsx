@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import Layout from "../components/Layout";
+import { getCoordinatesForCityName } from "../components/RouteMap";
 import "./Cities.css";
 
 function Cities() {
@@ -100,10 +101,18 @@ function Cities() {
 
     const safeCities = Array.isArray(cities) ? cities.filter(Boolean) : [];
 
-    const formatCoord = (val) => {
-        if (val === null || val === undefined || val === "") return "—";
-        const num = Number(val);
-        return isNaN(num) ? "—" : num.toFixed(4);
+    const formatCoord = (val, cityName, isLat = true) => {
+        if (val !== null && val !== undefined && val !== "") {
+            const num = Number(val);
+            if (!isNaN(num)) return num.toFixed(4);
+        }
+        if (cityName) {
+            const fallback = getCoordinatesForCityName(cityName);
+            if (fallback) {
+                return isLat ? fallback[0].toFixed(4) : fallback[1].toFixed(4);
+            }
+        }
+        return "—";
     };
 
     return (
@@ -215,8 +224,8 @@ function Cities() {
                                         <tr key={city.id || index}>
                                             <td>{index + 1}</td>
                                             <td className="font-semibold">{city.name}</td>
-                                            <td className="font-mono">{formatCoord(city.latitude)}</td>
-                                            <td className="font-mono">{formatCoord(city.longitude)}</td>
+                                            <td className="font-mono">{formatCoord(city.latitude, city.name, true)}</td>
+                                            <td className="font-mono">{formatCoord(city.longitude, city.name, false)}</td>
                                             <td>
                                                 <button
                                                     type="button"
