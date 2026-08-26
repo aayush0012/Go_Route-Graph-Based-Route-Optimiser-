@@ -1,9 +1,11 @@
 import os
-
+from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./routeiq.db")
@@ -18,7 +20,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
-
 
 
 def get_db():

@@ -14,7 +14,26 @@ function Roads() {
     const [isBidirectional, setIsBidirectional] = useState(true);
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+
+    const handleResetToMaster = async () => {
+        if (!window.confirm("Restore official master network? This will reset your workspace to the standard 12 hubs and 16 freight corridors.")) {
+            return;
+        }
+        try {
+            setIsResetting(true);
+            setErrorMsg("");
+            await api.post("/cities/reset-to-master");
+            await Promise.all([fetchCities(), fetchRoads()]);
+        } catch (error) {
+            console.log(error);
+            setErrorMsg("Failed to reset workspace.");
+        } finally {
+            setIsResetting(false);
+        }
+    };
+
 
     const fetchCities = async () => {
         try {
@@ -116,13 +135,34 @@ function Roads() {
     return (
         <Layout>
             <div className="roads-workspace">
-                <header className="workspace-header">
+                <header className="workspace-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
                     <div>
                         <h1 className="header-title">Road Network Management</h1>
                         <p className="header-subtitle">
                             Connect city hubs, define edge weights, and configure directional traffic rules. Leaving distance empty auto-calculates distance from GPS coordinates.
                         </p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={handleResetToMaster}
+                        disabled={isResetting}
+                        style={{
+                            background: "rgba(239, 68, 68, 0.1)",
+                            color: "#ef4444",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                            padding: "0.55rem 1rem",
+                            borderRadius: "8px",
+                            fontWeight: 600,
+                            fontSize: "0.875rem",
+                            cursor: isResetting ? "not-allowed" : "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            transition: "all 0.2s ease",
+                        }}
+                    >
+                        🔄 {isResetting ? "Restoring..." : "Restore Default Network"}
+                    </button>
                 </header>
 
                 {/* Horizontal Control Console */}

@@ -8,46 +8,39 @@ from app.models.city import City
 from app.models.road import Road
 from app.schemas.route import RouteRequest
 from app.services.pathfinding import dijkstra, bellman_ford, a_star
-from app.services.cache_service import (
-    build_route_cache_key,
-    get_route_result,
-    set_route_result,
-    get_graph_cache,
-    set_graph_cache,
-)
 
 
-def get_or_build_graph(db: Session) -> Dict[int, List[Tuple[int, int]]]:
-    # 1. Try fetching from Redis graph cache
-    cached_graph = get_graph_cache()
-    if cached_graph is not None:
-        return cached_graph
-
-    # 2. Cache MISS: Build graph from PostgreSQL DB
-    roads = db.query(Road).all()
+def get_or_build_graph(db: Session, user_id: int) -> Dict[int, List[Tuple[int, int]]]:
+    roads = db.query(Road).filter(Road.user_id == user_id).all()
     graph = defaultdict(list)
     for road in roads:
         graph[road.source_city_id].append((road.destination_city_id, road.distance))
         if road.is_bidirectional:
             graph[road.destination_city_id].append((road.source_city_id, road.distance))
 
-    # 3. Store graph in Redis
-    set_graph_cache(dict(graph))
     return graph
 
 
 def compute_route_from_graph(
     request: RouteRequest,
     db: Session,
+    user_id: int,
     graph: Dict[int, List[Tuple[int, int]]]
 ) -> Dict[str, Any]:
-    source = db.query(City).filter(City.id == request.source_city_id).first()
-    destination = db.query(City).filter(City.id == request.destination_city_id).first()
+    source = db.query(City).filter(
+        City.id == request.source_city_id,
+        City.user_id == user_id
+    ).first()
+    
+    destination = db.query(City).filter(
+        City.id == request.destination_city_id,
+        City.user_id == user_id
+    ).first()
 
     if not source or not destination:
         raise HTTPException(
             status_code=404,
-            detail="City not found",
+            detail="Source or Destination city not found in your workspace",
         )
 
     waypoints = [request.source_city_id] + (request.stops or []) + [request.destination_city_id]
@@ -70,8 +63,8 @@ def compute_route_from_graph(
             res = dijkstra(graph, start_node, end_node)
 
         if res is None:
-            c_start = db.query(City).filter(City.id == start_node).first()
-            c_end = db.query(City).filter(City.id == end_node).first()
+            c_start = db.query(City).filter(City.id == start_node, City.user_id == user_id).first()
+            c_end = db.query(City).filter(City.id == end_node, City.user_id == user_id).first()
             start_name = c_start.name if c_start else f"ID {start_node}"
             end_name = c_end.name if c_end else f"ID {end_node}"
             raise HTTPException(
@@ -96,7 +89,7 @@ def compute_route_from_graph(
     else:
         direct_res = dijkstra(graph, request.source_city_id, request.destination_city_id)
 
-    cities = db.query(City).all()
+    cities = db.query(City).filter(City.user_id == user_id).all()
     city_map = {city.id: city for city in cities}
     city_name_map = {city.id: city.name for city in cities}
 
@@ -114,7 +107,7 @@ def compute_route_from_graph(
             })
 
     road_distances = {}
-    for road in db.query(Road).all():
+    for road in db.query(Road).filter(Road.user_id == user_id).all():
         road_distances[(road.source_city_id, road.destination_city_id)] = road.distance
         if road.is_bidirectional:
             road_distances[(road.destination_city_id, road.source_city_id)] = road.distance
@@ -199,26 +192,6 @@ def compute_route_from_graph(
     }
 
 
-def calculate_route(request: RouteRequest, db: Session) -> Dict[str, Any]:
-    cache_key = build_route_cache_key(
-        request.source_city_id,
-        request.destination_city_id,
-        request.stops,
-        request.algorithm or "dijkstra"
-    )
-
-    # 1. Check Route Result Cache
-    cached_result = get_route_result(cache_key)
-    if cached_result is not None:
-        cached_result["cached"] = True
-        return cached_result
-
-    # 2. Route Cache MISS: Get Graph & Compute
-    graph = get_or_build_graph(db)
-    result = compute_route_from_graph(request, db, graph)
-    result["cached"] = False
-
-    # 3. Store result in Redis route cache
-    set_route_result(cache_key, result)
-
-    return result
+def calculate_route(request: RouteRequest, db: Session, user_id: int) -> Dict[str, Any]:
+    graph = get_or_build_graph(db, user_id)
+    return compute_route_from_graph(request, db, user_id, graph)

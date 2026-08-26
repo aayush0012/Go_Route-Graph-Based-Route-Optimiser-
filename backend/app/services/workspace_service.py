@@ -1,13 +1,9 @@
-"""
-E-Commerce Logistics & Freight Corridors Dataset Seeder for GoRoute
-Provides a realistic supply chain hub graph across major distribution centers.
-"""
-
-from app.database.database import SessionLocal
+from sqlalchemy.orm import Session
 from app.models.city import City
 from app.models.road import Road
 
-LOGISTICS_HUBS = [
+# 1. The Official Master Logistics Template
+MASTER_LOGISTICS_HUBS = [
     {"name": "Delhi NCR (North Mega-Hub)", "latitude": 28.6139, "longitude": 77.2090},
     {"name": "Jaipur (Western Transit Hub)", "latitude": 26.9124, "longitude": 75.7873},
     {"name": "Lucknow (Central Sorting)", "latitude": 26.8467, "longitude": 80.9462},
@@ -22,8 +18,8 @@ LOGISTICS_HUBS = [
     {"name": "Varanasi (Inland Cargo Port)", "latitude": 25.3176, "longitude": 82.9739},
 ]
 
-# (Source Hub, Destination Hub, Distance in km, Is Bidirectional)
-FREIGHT_CORRIDORS = [
+# (Source Hub Name, Destination Hub Name, Distance in km, Is Bidirectional)
+MASTER_FREIGHT_CORRIDORS = [
     ("Delhi NCR (North Mega-Hub)", "Jaipur (Western Transit Hub)", 270, True),
     ("Delhi NCR (North Mega-Hub)", "Lucknow (Central Sorting)", 530, True),
     ("Delhi NCR (North Mega-Hub)", "Nagpur (Central Freight Zero-Mile)", 1080, True),
@@ -43,52 +39,46 @@ FREIGHT_CORRIDORS = [
 ]
 
 
-def seed_dataset():
-    db = SessionLocal()
-    try:
-        print("[+] Seeding GoRoute Logistics Dataset...")
+def seed_user_workspace(user_id: int, db: Session):
+    """
+    Clones the complete official master network into a specific user's private sandbox.
+    """
+    # 1. Add Cities for this user
+    city_map = {}
+    for hub in MASTER_LOGISTICS_HUBS:
+        city = City(
+            user_id=user_id,
+            name=hub["name"],
+            latitude=hub["latitude"],
+            longitude=hub["longitude"],
+        )
+        db.add(city)
+        db.flush()  # Populates city.id before committing
+        city_map[city.name] = city.id
 
-        # 1. Clear old roads and test cities cleanly
-        db.query(Road).delete()
-        db.query(City).delete()
-        db.commit()
-
-        # 2. Add realistic Logistics Hubs (Nodes)
-        city_map = {}
-        for hub_data in LOGISTICS_HUBS:
-            city = City(
-                name=hub_data["name"],
-                latitude=hub_data["latitude"],
-                longitude=hub_data["longitude"],
+    # 2. Add Connected Freight Corridors for this user
+    for src_name, dst_name, distance, is_bidi in MASTER_FREIGHT_CORRIDORS:
+        if src_name in city_map and dst_name in city_map:
+            road = Road(
+                user_id=user_id,
+                source_city_id=city_map[src_name],
+                destination_city_id=city_map[dst_name],
+                distance=distance,
+                is_bidirectional=is_bidi,
             )
-            db.add(city)
-            db.commit()
-            db.refresh(city)
-            city_map[city.name] = city.id
-            print(f"  [+] Added Node: {city.name} (ID: {city.id})")
+            db.add(road)
 
-        # 3. Add realistic Corridors (Edges)
-        for src_name, dst_name, distance, is_bidi in FREIGHT_CORRIDORS:
-            if src_name in city_map and dst_name in city_map:
-                road = Road(
-                    source_city_id=city_map[src_name],
-                    destination_city_id=city_map[dst_name],
-                    distance=distance,
-                    is_bidirectional=is_bidi,
-                )
-                db.add(road)
-                print(f"  [+] Connected Corridor: {src_name} <--> {dst_name} ({distance} km)")
-
-        db.commit()
-
-        print("[SUCCESS] Dataset successfully seeded with 12 Hubs and 16 Freight Corridors!")
-
-    except Exception as e:
-        db.rollback()
-        print(f"[ERROR] Error seeding dataset: {e}")
-    finally:
-        db.close()
+    db.commit()
 
 
-if __name__ == "__main__":
-    seed_dataset()
+def reset_user_workspace(user_id: int, db: Session):
+    """
+    Wipes the user's custom cities/roads and re-clones the official master template.
+    """
+    # Delete current user's roads and cities
+    db.query(Road).filter(Road.user_id == user_id).delete(synchronize_session=False)
+    db.query(City).filter(City.user_id == user_id).delete(synchronize_session=False)
+    db.commit()
+
+    # Re-seed the fresh master network
+    seed_user_workspace(user_id, db)

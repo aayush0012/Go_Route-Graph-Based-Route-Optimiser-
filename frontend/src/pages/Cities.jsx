@@ -9,6 +9,7 @@ function Cities() {
     const [latitude, setLatitude] = useState("");
     const [longitude, setLongitude] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
     const fetchCities = async () => {
@@ -21,6 +22,24 @@ function Cities() {
             setCities([]);
         }
     };
+
+    const handleResetToMaster = async () => {
+        if (!window.confirm("Restore official master network? This will reset your workspace to the standard 12 hubs and 16 freight corridors.")) {
+            return;
+        }
+        try {
+            setIsResetting(true);
+            setErrorMsg("");
+            await api.post("/cities/reset-to-master");
+            await fetchCities();
+        } catch (error) {
+            console.log(error);
+            setErrorMsg("Failed to reset workspace.");
+        } finally {
+            setIsResetting(false);
+        }
+    };
+
 
     useEffect(() => {
         fetchCities();
@@ -90,13 +109,34 @@ function Cities() {
     return (
         <Layout>
             <div className="cities-workspace">
-                <header className="workspace-header">
+                <header className="workspace-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
                     <div>
                         <h1 className="header-title">City Hub Registry</h1>
                         <p className="header-subtitle">
                             Register and manage network city hubs and spatial coordinates. Leaving coordinates empty auto-detects latitude and longitude via geocoding.
                         </p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={handleResetToMaster}
+                        disabled={isResetting}
+                        style={{
+                            background: "rgba(239, 68, 68, 0.1)",
+                            color: "#ef4444",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                            padding: "0.55rem 1rem",
+                            borderRadius: "8px",
+                            fontWeight: 600,
+                            fontSize: "0.875rem",
+                            cursor: isResetting ? "not-allowed" : "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            transition: "all 0.2s ease",
+                        }}
+                    >
+                        🔄 {isResetting ? "Restoring..." : "Restore Default Network"}
+                    </button>
                 </header>
 
                 {/* Horizontal Control Console */}

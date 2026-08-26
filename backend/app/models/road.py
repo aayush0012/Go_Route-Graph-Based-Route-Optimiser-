@@ -6,7 +6,9 @@ from app.database.base import Base
 
 class Road(Base):
     __tablename__ = "roads"
+
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     source_city_id = Column(
         Integer,
         ForeignKey("cities.id"),
@@ -23,6 +25,7 @@ class Road(Base):
         default=True,
         nullable=False,
     )
+
     source_city = relationship(
         "City",
         foreign_keys=[source_city_id],
@@ -30,4 +33,8 @@ class Road(Base):
     destination_city = relationship(
         "City",
         foreign_keys=[destination_city_id],
+    )
+    user = relationship(
+        "User",
+        backref="roads",
     )

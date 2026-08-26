@@ -8,12 +8,13 @@ from app.models import User, City,Road
 Base.metadata.create_all(bind=engine)
 from app.api.road import router as road_router
 from app.api.route import router as route_router
-from app.services.cache_service import is_redis_available
 from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="Go Route API",
     version="1.0.0",
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,6 +22,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(route_router)
 app.include_router(user_router)
 app.include_router(city_router)
@@ -28,6 +30,5 @@ app.include_router(road_router)
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to GoRoute 🚗",
-        "redis_status": "online ⚡" if is_redis_available() else "offline ⚠️ (fallback active)"
-    }
+        "message": "Welcome to GoRoute 🚗"
+    }

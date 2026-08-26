@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.models.city import City
 from app.models.road import Road
+from app.models.user import User
 from app.schemas.road import RoadCreate
-from app.services.cache_service import invalidate_all_caches
+from app.api.user import get_current_user
 
 router = APIRouter(
     prefix="/roads",
@@ -28,20 +29,22 @@ def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: fl
 def create_road(
     road: RoadCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-
     source = db.query(City).filter(
-        City.id == road.source_city_id
+        City.id == road.source_city_id,
+        City.user_id == current_user.id
     ).first()
 
     destination = db.query(City).filter(
-        City.id == road.destination_city_id
+        City.id == road.destination_city_id,
+        City.user_id == current_user.id
     ).first()
 
     if not source or not destination:
         raise HTTPException(
             status_code=404,
-            detail="Invalid city id",
+            detail="Invalid city ID in your workspace",
         )
 
     final_distance = road.distance
@@ -59,6 +62,7 @@ def create_road(
             )
 
     new_road = Road(
+        user_id=current_user.id,
         source_city_id=road.source_city_id,
         destination_city_id=road.destination_city_id,
         distance=int(final_distance),
@@ -69,37 +73,37 @@ def create_road(
     db.commit()
     db.refresh(new_road)
 
-    invalidate_all_caches()
     return new_road
 
 
 @router.get("/")
 def get_all_roads(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return db.query(Road).all()
+    return db.query(Road).filter(Road.user_id == current_user.id).all()
 
 
 @router.delete("/{road_id}")
 def delete_road(
     road_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-
     road = db.query(Road).filter(
-        Road.id == road_id
+        Road.id == road_id,
+        Road.user_id == current_user.id
     ).first()
 
     if not road:
         raise HTTPException(
             status_code=404,
-            detail="Road not found",
+            detail="Road not found in your workspace",
         )
 
     db.delete(road)
     db.commit()
 
-    invalidate_all_caches()
     return {
         "message": "Road deleted successfully"
     }

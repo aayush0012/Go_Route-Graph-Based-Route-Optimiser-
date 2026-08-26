@@ -7,8 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.models.city import City
+from app.models.road import Road
+from app.models.user import User
 from app.schemas.city import CityCreate
-from app.services.cache_service import invalidate_all_caches
+from app.api.user import get_current_user
+from app.services.workspace_service import reset_user_workspace
 
 router = APIRouter(
     prefix="/cities",
@@ -57,23 +60,36 @@ DEFAULT_CITY_COORDINATES = {
     "trivandrum": (8.5241, 76.9366),
 }
 
+
 def geocode_city_name(city_name: str):
+    """
+    Query OpenStreetMap Nominatim for GPS coordinates.
+    """
     try:
-        url = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(city_name)}&format=json&limit=1"
+        encoded_query = urllib.parse.quote(f"{city_name}, India")
+        url = f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&limit=1"
         req = urllib.request.Request(
             url,
-            headers={'User-Agent': 'RouteIQ-App/1.0'}
+            headers={"User-Agent": "GoRoutePlannerApp/1.0 (contact@goroute.internal)"}
         )
-        with urllib.request.urlopen(req, timeout=2) as response:
-            data = json.loads(response.read().decode())
-            if data and len(data) > 0:
-                return float(data[0]['lat']), float(data[0]['lon'])
-    except Exception as e:
-        print(f"Geocoding lookup failed for {city_name}: {e}")
+        with urllib.request.urlopen(req, timeout=3.0) as response:
+            if response.status == 200:
+                data = json.loads(response.read().decode("utf-8"))
+                if data and len(data) > 0:
+                    lat = float(data[0]["lat"])
+                    lon = float(data[0]["lon"])
+                    return lat, lon
+    except Exception:
+        pass
     return None, None
 
+
 @router.post("/")
-def create_city(city: CityCreate, db: Session = Depends(get_db)):
+def create_city(
+    city: CityCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     clean_name = city.name.strip()
     if not clean_name:
         raise HTTPException(
@@ -81,14 +97,16 @@ def create_city(city: CityCreate, db: Session = Depends(get_db)):
             detail="City name cannot be empty."
         )
 
+    # Check duplicates in current user's workspace only
     existing_city = db.query(City).filter(
-        func.lower(City.name) == func.lower(clean_name)
+        City.user_id == current_user.id,
+        func.lower(City.name) == clean_name.lower()
     ).first()
 
     if existing_city:
         raise HTTPException(
             status_code=400,
-            detail=f"City '{existing_city.name}' already exists."
+            detail=f"City '{existing_city.name}' already exists in your workspace."
         )
 
     lat = city.latitude
@@ -104,6 +122,7 @@ def create_city(city: CityCreate, db: Session = Depends(get_db)):
                 lat, lng = g_lat, g_lng
 
     new_city = City(
+        user_id=current_user.id,
         name=clean_name,
         latitude=lat,
         longitude=lng
@@ -113,51 +132,54 @@ def create_city(city: CityCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_city)
 
-    invalidate_all_caches()
     return new_city
 
 
 @router.get("/")
-def get_all_cities(db: Session = Depends(get_db)):
-    cities = db.query(City).all()
-    updated = False
-    for c in cities:
-        if c.latitude is None or c.longitude is None:
-            key = c.name.strip().lower()
-            if key in DEFAULT_CITY_COORDINATES:
-                c.latitude, c.longitude = DEFAULT_CITY_COORDINATES[key]
-                updated = True
-    if updated:
-        try:
-            db.commit()
-        except Exception:
-            db.rollback()
-    return cities
+def get_all_cities(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return db.query(City).filter(City.user_id == current_user.id).all()
 
 
 @router.delete("/{city_id}")
-def delete_city(city_id: int, db: Session = Depends(get_db)):
-    from app.models.road import Road
-
+def delete_city(
+    city_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     city = db.query(City).filter(
-        City.id == city_id
+        City.id == city_id,
+        City.user_id == current_user.id
     ).first()
 
     if not city:
         raise HTTPException(
             status_code=404,
-            detail="City not found"
+            detail="City not found in your workspace"
         )
 
-    # Delete all connected roads referencing this city to avoid foreign key violations
+    # Delete all connected roads in user's workspace
     db.query(Road).filter(
+        Road.user_id == current_user.id,
         (Road.source_city_id == city_id) | (Road.destination_city_id == city_id)
     ).delete(synchronize_session=False)
 
     db.delete(city)
     db.commit()
 
-    invalidate_all_caches()
     return {
         "message": "City deleted successfully"
-    }
+    }
+
+
+@router.post("/reset-to-master")
+def reset_workspace_to_master(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    reset_user_workspace(current_user.id, db)
+    return {
+        "message": "Workspace successfully restored to Official Master Logistics Network!"
+    }
