@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.city import City
 from app.models.road import Road
 from app.schemas.route import RouteRequest
-from app.services.pathfinding import dijkstra, bellman_ford, a_star
+from app.services.pathfinding import dijkstra, a_star
 
 
 def get_or_build_graph(db: Session, user_id: int) -> Dict[int, List[Tuple[int, int]]]:
@@ -55,9 +55,7 @@ def compute_route_from_graph(
         if start_node == end_node:
             continue
 
-        if algo == "bellman_ford":
-            res = bellman_ford(graph, start_node, end_node)
-        elif algo == "a_star":
+        if algo == "a_star":
             res = a_star(graph, start_node, end_node)
         else:
             res = dijkstra(graph, start_node, end_node)
@@ -82,9 +80,7 @@ def compute_route_from_graph(
 
     # Compute direct route for comparison
     direct_res = None
-    if algo == "bellman_ford":
-        direct_res = bellman_ford(graph, request.source_city_id, request.destination_city_id)
-    elif algo == "a_star":
+    if algo == "a_star":
         direct_res = a_star(graph, request.source_city_id, request.destination_city_id)
     else:
         direct_res = dijkstra(graph, request.source_city_id, request.destination_city_id)

@@ -1,5 +1,6 @@
 import heapq
 
+
 def dijkstra(graph, source, destination):
     pq = [(0, source)]
     distance = {node: float("inf") for node in graph}
@@ -35,42 +36,12 @@ def dijkstra(graph, source, destination):
     path.reverse()
     return distance[destination], path
 
-def bellman_ford(graph, source, destination):
-    nodes = set()
-    for u in graph:
-        nodes.add(u)
-        for v, _ in graph[u]:
-            nodes.add(v)
-
-    distance = {node: float("inf") for node in nodes}
-    distance[source] = 0
-    parent = {source: None}
-
-    for _ in range(len(nodes) - 1):
-        for u in graph:
-            for v, w in graph[u]:
-                if distance[u] != float("inf") and distance[u] + w < distance[v]:
-                    distance[v] = distance[u] + w
-                    parent[v] = u
-
-    if distance.get(destination, float("inf")) == float("inf"):
-        return None
-
-    path = []
-    current = destination
-    while current is not None:
-        path.append(current)
-        current = parent.get(current)
-    path.reverse()
-    return distance[destination], path
-
 
 def a_star(graph, source, destination):
 
     def heuristic(node):
         return 0
 
-   
     open_set = [(heuristic(source), source)]
     g_score = {node: float("inf") for node in graph}
    

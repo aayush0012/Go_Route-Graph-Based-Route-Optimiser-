@@ -1,6 +1,6 @@
 # GoRoute - Graph-Based Route Optimization Platform
 
-A full-stack logistics and route optimization platform that enables users to model city networks, connect roads, and compute optimal routes between locations using **Dijkstra**, **Bellman-Ford**, and **A\*** graph algorithms, with support for **dynamic intermediate stops** and **user-isolated sandbox workspaces**.
+A full-stack logistics and route optimization platform that enables users to model city networks, connect roads, and compute optimal routes between locations using **Dijkstra** and **A\*** graph algorithms, with support for **dynamic intermediate stops** and **user-isolated sandbox workspaces**.
 
 ---
 
@@ -17,7 +17,6 @@ A full-stack logistics and route optimization platform that enables users to mod
 - **Master Network Template & Recovery:** A protected global master logistics dataset (12 key hubs and 16 freight corridors) is auto-seeded on account creation, with a one-click restore action (`/cities/reset-to-master`) to recover baseline state.
 - **Multi-Algorithm Routing Engine:**
   - **Dijkstra's Algorithm:** Fast greedy shortest-path search using a min-heap priority queue ($O((V+E)\log V)$).
-  - **Bellman-Ford Algorithm:** Edge relaxation algorithm supporting cyclical and negative-edge verification.
   - **A\* Search Algorithm:** Heuristic-guided search utilizing spatial coordinate evaluation.
 - **Dynamic Multi-Hop Waypoint Routing:** Supports sequential intermediate stops (e.g., Delhi -> Bengaluru -> Mysore) with aggregate distance calculations, segment breakdowns, and comparison against direct transit routes.
 - **Geodesic Distance Auto-Computation:** Automatically calculates real-world edge distances from GPS coordinates using the Haversine formula when explicit distances are omitted.
@@ -84,7 +83,6 @@ PostgreSQL Database (Neon Serverless)
         v
 Segmented Graph Routing Engine
    |-- Dijkstra's Algorithm (Min-Heap Priority Queue)
-   |-- Bellman-Ford Algorithm (Edge Relaxation)
    \-- A* Heuristic Algorithm
 ```
 
