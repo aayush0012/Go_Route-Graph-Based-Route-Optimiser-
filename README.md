@@ -1,251 +1,216 @@
-# 🚗 GoRoute
+# GoRoute - Graph-Based Route Optimization Platform
 
-A premium, full-stack route optimization platform that enables users to manage city networks, connect roads, and compute optimal routes between cities using **Dijkstra, Bellman-Ford, and A* Graph Algorithms**, with support for **dynamic intermediate stops**.
-
----
-
-## 🌐 Live Demo
-
-**Live:** https://backend-proj-blue.vercel.app/
-
-## 💻 Source Code
-
-**GitHub:** https://github.com/aayush0012/Go_Route-Graph-Based-Route-Optimiser-
+A full-stack logistics and route optimization platform that enables users to model city networks, connect roads, and compute optimal routes between locations using **Dijkstra**, **Bellman-Ford**, and **A\*** graph algorithms, with support for **dynamic intermediate stops** and **user-isolated sandbox workspaces**.
 
 ---
 
-# ✨ Features
+## Live Demo
 
-- 🔐 **Secure JWT Authentication**: User registration, login, and secure token storage.
-- 👥 **Access as Guest**: Single-click guest login for immediate system evaluation.
-- 🏙️ **City Hub Management**: CRUD operations to register new logistics cities dynamically.
-- 🛣️ **Road Network Designer**: Link cities together, set driving distances, and configure bidirectional or one-way routes.
-- 📍 **Multi-Algorithm Routing**: Compute optimal paths using **Dijkstra (Fastest)**, **Bellman-Ford (Negative Edge/Standard)**, or **A* (Heuristic)** search.
-- 🛑 **Dynamic Intermediate Stops**: Add multiple waypoints along the journey (e.g. Delhi ➔ Bengaluru ➔ Mysore) to calculate segmented multi-hop routes sequentially.
-- 🎨 **Premium UI Design**: Clean, handcrafted, card-grid dashboard layout styled with **Plus Jakarta Sans** typography and a warm tone aesthetic.
+- **Web Application:** https://backend-proj-blue.vercel.app/
+- **Source Code Repository:** https://github.com/aayush0012/Go_Route-Graph-Based-Route-Optimiser-
 
 ---
 
-# 📸 Application Screenshots
+## Features
 
-## Dashboard
+- **Multi-Tenant Sandboxes:** Each registered user and guest receives an isolated private road network workspace. Modifications, custom hubs, and deleted roads in one workspace do not affect other users.
+- **Master Network Template & Recovery:** A protected global master logistics dataset (12 key hubs and 16 freight corridors) is auto-seeded on account creation, with a one-click restore action (`/cities/reset-to-master`) to recover baseline state.
+- **Multi-Algorithm Routing Engine:**
+  - **Dijkstra's Algorithm:** Fast greedy shortest-path search using a min-heap priority queue ($O((V+E)\log V)$).
+  - **Bellman-Ford Algorithm:** Edge relaxation algorithm supporting cyclical and negative-edge verification.
+  - **A\* Search Algorithm:** Heuristic-guided search utilizing spatial coordinate evaluation.
+- **Dynamic Multi-Hop Waypoint Routing:** Supports sequential intermediate stops (e.g., Delhi -> Bengaluru -> Mysore) with aggregate distance calculations, segment breakdowns, and comparison against direct transit routes.
+- **Geodesic Distance Auto-Computation:** Automatically calculates real-world edge distances from GPS coordinates using the Haversine formula when explicit distances are omitted.
+- **Secure Authentication:** Stateless JWT-based authentication, password hashing with bcrypt/passlib, and role/user-scoped database operations.
+- **Interactive UI Dashboard:** Built with React and styled with a modern, responsive layout.
 
+---
+
+## Application Preview
+
+### Dashboard
 <p align="center">
-  <img src="images/dashboard.png?v=2" width="900">
+  <img src="images/dashboard.png?v=2" width="900" alt="Dashboard Preview">
+</p>
+
+### Route Planner
+<p align="center">
+  <img src="images/route-planner.png?v=2" width="900" alt="Route Planner Preview">
+</p>
+
+### City Hub Management
+<p align="center">
+  <img src="images/cities.png?v=2" width="900" alt="Cities Management Preview">
 </p>
 
 ---
 
-## Route Planner
-
-<p align="center">
-  <img src="images/route-planner.png?v=2" width="900">
-</p>
-
----
-
-## Cities Management
-
-<p align="center">
-  <img src="images/cities.png?v=2" width="900">
-</p>
-
----
-
-# 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
-
-- React.js
-- React Router
+- React.js (v19)
+- React Router DOM
+- TailwindCSS
+- Axios
 
 ### Backend
-
 - FastAPI
 - SQLAlchemy ORM
 - Pydantic
 - Uvicorn
+- Python-Jose & Passlib (JWT / Cryptography)
 
-### Database
-
+### Database & Infrastructure
 - PostgreSQL (Neon Serverless)
-
-### Deployment
-
-- Render
-- Vercel
+- Vercel (Frontend Hosting)
+- Render (Backend Hosting)
 
 ---
 
-# 🏗️ Project Architecture
+## System Architecture
 
 ```
-React Frontend (GoRoute)
-        │
-        ▼
-   Axios Client
-        │
-        ▼
-  FastAPI Backend (Uvicorn)
-        │
-        ▼
-  SQLAlchemy ORM
-        │
-        ▼
- PostgreSQL Database
-        │
-        ▼
- Segmented Routing Engine
-   ├── Dijkstra's Algorithm
-   ├── Bellman-Ford Algorithm
-   └── A* Heuristic Algorithm
+React Frontend (Vite)
+        |
+        v  (REST API / JWT Header)
+FastAPI Backend (Uvicorn)
+        |
+        v
+SQLAlchemy ORM (User-Scoped Queries)
+        |
+        v
+PostgreSQL Database (Neon Serverless)
+        |
+        v
+Segmented Graph Routing Engine
+   |-- Dijkstra's Algorithm (Min-Heap Priority Queue)
+   |-- Bellman-Ford Algorithm (Edge Relaxation)
+   \-- A* Heuristic Algorithm
 ```
 
 ---
 
-# 📂 Folder Structure
+## Folder Structure
 
 ```
-backend/
-│
-├── app/
-│   ├── api/          # Route handlers (users, cities, roads, routes)
-│   ├── database/     # DB Session & engine configuration
-│   ├── models/       # SQLAlchemy models (User, City, Road)
-│   ├── schemas/      # Pydantic schemas
-│   ├── services/     # Pathfinding algorithms
-│   └── main.py       # FastAPI application entrypoint
-│
-├── Dockerfile
-└── requirements.txt
-
-
-frontend/
-│
-├── src/
-│   ├── components/   # Layout and Navigation bar
-│   ├── pages/        # Dashboard, Cities, Roads, RoutePlanner, Login, Register
-│   ├── services/     # Axios client configuration
-│   └── App.jsx       # Routing rules
-│
-├── package.json
-└── vite.config.js
+RouteIQ/
+|
+|-- backend/
+|   |-- app/
+|   |   |-- api/                # API route controllers (user, city, road, route)
+|   |   |-- core/               # Configuration settings
+|   |   |-- database/           # DB engine, session lifecycle, and seeders
+|   |   |-- models/             # SQLAlchemy models (User, City, Road)
+|   |   |-- schemas/            # Pydantic validation schemas
+|   |   |-- services/           # Routing engine and workspace seeder
+|   |   |-- utils/              # Security and JWT utilities
+|   |   \-- main.py             # FastAPI entrypoint and middleware
+|   |-- Dockerfile
+|   |-- docker-compose.yml
+|   \-- requirements.txt
+|
+\-- frontend/
+    |-- src/
+    |   |-- components/         # Layout, Navbar, Protected Routes
+    |   |-- pages/              # Dashboard, Cities, Roads, RoutePlanner, Login, Register
+    |   |-- services/           # Axios client instance with auth interceptors
+    |   |-- App.jsx             # React routing setup
+    |   \-- main.jsx            # Frontend entrypoint
+    |-- package.json
+    \-- vite.config.js
 ```
 
 ---
 
-# 🛣️ Route Optimization & Algorithms
+## Route Optimization and Graph Model
 
-GoRoute models your transportation network as a **weighted directed graph**:
-- **Cities** act as vertices (nodes).
-- **Roads** act as weighted directed or undirected edges (distances).
+The road network is modeled as a **weighted directed/undirected graph** $G = (V, E)$:
+- **Vertices ($V$):** Logistics cities and warehouse hubs.
+- **Edges ($E$):** Road segments with driving distances as edge weights.
 
-The engine partitions routes with intermediate waypoints into consecutive segments and executes the chosen search algorithm:
-1. **Dijkstra's Algorithm**: Rapid greedy search suitable for finding the absolute shortest paths.
-2. **Bellman-Ford Algorithm**: Classical edge relaxation, supporting negative weights and verifying cyclic connectivity.
-3. **A\* Algorithm**: Heuristic-guided search utilizing a coordinated spatial heuristic ($h(n) = 0$ spatial coordinates fallback).
+When multi-stop queries are submitted ($S \to W_1 \to W_2 \dots \to D$), the engine partitions the path into consecutive sub-problems, computes the shortest sub-paths, and reconstructs the end-to-end route with segment telemetry and fuel/time savings metrics.
 
 ---
 
-# 📡 REST API Endpoints
+## REST API Endpoints
 
-## Authentication
+### Authentication
 
 | Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/register` | Register a new user |
-| POST | `/login` | Authenticate credentials and return JWT |
-| POST | `/login/guest` | Generate a session token for guest users |
+| :--- | :--- | :--- |
+| POST | `/register` | Register a new user and auto-seed default workspace |
+| POST | `/login` | Authenticate credentials and return JWT bearer token |
+| POST | `/login/guest` | Instant single-click guest login with isolated workspace |
+| GET | `/me` | Get profile of the current authenticated user |
 
----
-
-## Cities
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/cities/` | List all registered cities |
-| POST | `/cities/` | Register a new city |
-| DELETE | `/cities/{id}` | Delete a city hub |
-
----
-
-## Roads
+### City Hubs
 
 | Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/roads/` | List all road connections |
-| POST | `/roads/` | Link two cities with a road |
-| DELETE | `/roads/{id}` | Remove a road connection |
+| :--- | :--- | :--- |
+| GET | `/cities/` | List all city hubs in the user's workspace |
+| POST | `/cities/` | Register a new city hub (with optional geocoding) |
+| DELETE | `/cities/{id}` | Delete a city hub and cascade-remove associated roads |
+| POST | `/cities/reset-to-master` | Restore workspace to official master logistics network |
 
----
-
-## Route
+### Roads
 
 | Method | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/route/` | Calculate the shortest path with stops |
+| :--- | :--- | :--- |
+| GET | `/roads/` | List all road connections in the user's workspace |
+| POST | `/roads/` | Connect two hubs (supports Haversine distance auto-calculation) |
+| DELETE | `/roads/{id}` | Remove a road segment from the user's network |
+
+### Route Optimization
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/route/` | Compute shortest path with algorithms and waypoint stops |
 
 ---
 
-# 🚀 Running Locally
+## Local Development Setup
 
-## Backend
+### 1. Backend Setup
 
 ```bash
 cd backend
 
+# Create and activate virtual environment
 python -m venv venv
 
 # Windows
-venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 
+# Linux/macOS
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-uvicorn app.main:app --reload
+# Run FastAPI development server
+uvicorn app.main:app --reload --port 8000
 ```
 
-Runs on:
+Backend API documentation is available at `http://localhost:8000/docs`.
 
-```
-http://localhost:8000
-```
-
----
-
-## Frontend
+### 2. Frontend Setup
 
 ```bash
 cd frontend
 
+# Install Node dependencies
 npm install
 
+# Start Vite dev server
 npm run dev
 ```
 
-Runs on:
-
-```
-http://localhost:5173
-```
+Frontend application runs at `http://localhost:5173`.
 
 ---
 
-# 📌 Future Enhancements
-
-- Traffic-Based Route Optimization
-- Road Closure Support
-- Multiple Route Suggestions
-- Interactive Maps
-- Route History
-
----
-
-# 👨‍💻 Author
+## Author
 
 **Aayush Bhatt**
-
-GitHub: https://github.com/aayush0012
-
-LinkedIn: https://www.linkedin.com/in/aayush-bhatt-3657b1314/
-
----
+- GitHub: https://github.com/aayush0012
+- LinkedIn: https://www.linkedin.com/in/aayush-bhatt-3657b1314/
