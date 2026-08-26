@@ -1,6 +1,7 @@
 import urllib.request
 import json
 import urllib.parse
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ from app.database.database import get_db
 from app.models.city import City
 from app.models.road import Road
 from app.models.user import User
-from app.schemas.city import CityCreate
+from app.schemas.city import CityCreate, CityResponse
 from app.api.user import get_current_user
 from app.services.workspace_service import reset_user_workspace
 
@@ -84,7 +85,7 @@ def geocode_city_name(city_name: str):
     return None, None
 
 
-@router.post("/")
+@router.post("/", response_model=CityResponse)
 def create_city(
     city: CityCreate,
     db: Session = Depends(get_db),
@@ -135,7 +136,7 @@ def create_city(
     return new_city
 
 
-@router.get("/")
+@router.get("/", response_model=List[CityResponse])
 def get_all_cities(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

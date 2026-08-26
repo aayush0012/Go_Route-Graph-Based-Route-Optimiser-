@@ -1,4 +1,5 @@
 import math
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -6,7 +7,7 @@ from app.database.database import get_db
 from app.models.city import City
 from app.models.road import Road
 from app.models.user import User
-from app.schemas.road import RoadCreate
+from app.schemas.road import RoadCreate, RoadResponse
 from app.api.user import get_current_user
 
 router = APIRouter(
@@ -25,7 +26,7 @@ def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: fl
     return max(1, int(round(R * c)))
 
 
-@router.post("/")
+@router.post("/", response_model=RoadResponse)
 def create_road(
     road: RoadCreate,
     db: Session = Depends(get_db),
@@ -76,7 +77,7 @@ def create_road(
     return new_road
 
 
-@router.get("/")
+@router.get("/", response_model=List[RoadResponse])
 def get_all_roads(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
