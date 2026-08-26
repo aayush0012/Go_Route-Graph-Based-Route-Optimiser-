@@ -191,26 +191,45 @@ function RouteMap({
 
     if (routeSegments && routeSegments.length > 0) {
         routeSegments.forEach((seg) => {
-            if (seg.source_coords && seg.dest_coords) {
-                calculatedRoutePolylines.push([
-                    seg.source_coords,
-                    seg.dest_coords,
-                ]);
-                routePoints.push(seg.source_coords);
-                routePoints.push(seg.dest_coords);
+            let srcCoord = seg.source_coords;
+            let dstCoord = seg.dest_coords;
+
+            // Fallback coordinate lookup
+            if ((!srcCoord || isNaN(srcCoord[0])) && seg.source) {
+                const sCity = validCities.find(c => c.name && c.name.toLowerCase().trim() === seg.source.toLowerCase().trim());
+                if (sCity) srcCoord = [sCity.latitude, sCity.longitude];
+            }
+            if ((!dstCoord || isNaN(dstCoord[0])) && seg.destination) {
+                const dCity = validCities.find(c => c.name && c.name.toLowerCase().trim() === seg.destination.toLowerCase().trim());
+                if (dCity) dstCoord = [dCity.latitude, dCity.longitude];
+            }
+
+            if (srcCoord && dstCoord && !isNaN(srcCoord[0]) && !isNaN(dstCoord[0])) {
+                calculatedRoutePolylines.push([srcCoord, dstCoord]);
+                routePoints.push(srcCoord);
+                routePoints.push(dstCoord);
             }
         });
-    } else if (safePathNodes.length >= 2) {
+    }
+
+    if (calculatedRoutePolylines.length === 0 && safePathNodes.length >= 2) {
         for (let i = 0; i < safePathNodes.length - 1; i++) {
             const n1 = safePathNodes[i];
             const n2 = safePathNodes[i + 1];
-            if (n1 && n2 && n1.lat && n1.lng && n2.lat && n2.lng) {
-                calculatedRoutePolylines.push([
-                    [n1.lat, n1.lng],
-                    [n2.lat, n2.lng],
-                ]);
-                routePoints.push([n1.lat, n1.lng]);
-                routePoints.push([n2.lat, n2.lng]);
+            let c1 = (n1 && n1.lat && n1.lng) ? [n1.lat, n1.lng] : null;
+            let c2 = (n2 && n2.lat && n2.lng) ? [n2.lat, n2.lng] : null;
+
+            if (!c1 && n1 && n1.id && cityMap[n1.id]) {
+                c1 = [cityMap[n1.id].latitude, cityMap[n1.id].longitude];
+            }
+            if (!c2 && n2 && n2.id && cityMap[n2.id]) {
+                c2 = [cityMap[n2.id].latitude, cityMap[n2.id].longitude];
+            }
+
+            if (c1 && c2 && !isNaN(c1[0]) && !isNaN(c2[0])) {
+                calculatedRoutePolylines.push([c1, c2]);
+                routePoints.push(c1);
+                routePoints.push(c2);
             }
         }
     }
@@ -231,7 +250,6 @@ function RouteMap({
                     setIsAnimating(false);
                     return totalSteps;
                 }
-                // Set freight marker position to current node
                 const activePoly = calculatedRoutePolylines[nextStep - 1];
                 if (activePoly && activePoly[1]) {
                     setFreightPosition(activePoly[1]);
@@ -245,12 +263,12 @@ function RouteMap({
 
     // Reset animation when new route loads
     useEffect(() => {
-        if (hasActiveRoute) {
+        if (totalSteps > 0) {
             setAnimationStep(totalSteps);
             setIsAnimating(false);
             setFreightPosition(null);
         }
-    }, [hasActiveRoute, totalSteps]);
+    }, [totalSteps, routeSegments, routePathNodes]);
 
     const startAnimation = () => {
         setAnimationStep(1);
@@ -274,9 +292,9 @@ function RouteMap({
         setFreightPosition(null);
     };
 
-    // Filter polylines to show based on animation step
-    const visibleRoutePolylines = isAnimating || animationStep < totalSteps
-        ? calculatedRoutePolylines.slice(0, animationStep)
+    // Filter polylines to show based on animation step (always show all when not actively animating)
+    const visibleRoutePolylines = isAnimating
+        ? calculatedRoutePolylines.slice(0, Math.max(1, animationStep))
         : calculatedRoutePolylines;
 
     const allPoints = validCities.map(c => [c.latitude, c.longitude]);
@@ -304,25 +322,40 @@ function RouteMap({
                         key={`road-${road.id}`}
                         positions={road.positions}
                         pathOptions={{
-                            color: "#CBD5E1",
-                            weight: 1.8,
-                            opacity: 0.5,
-                            dashArray: "4, 4",
+                            color: "#94A3B8",
+                            weight: 2,
+                            opacity: 0.45,
+                            dashArray: "5, 5",
                         }}
                     />
                 ))}
 
-                {/* Active calculated route polylines with animated pulse glow */}
+                {/* Active calculated route glow & primary line */}
                 {visibleRoutePolylines.map((seg, idx) => (
-                    <Polyline
-                        key={`calc-seg-${idx}`}
-                        positions={seg}
-                        pathOptions={{
-                            color: "#059669",
-                            weight: 5,
-                            opacity: 0.9,
-                        }}
-                    />
+                    <React.Fragment key={`calc-group-${idx}-${seg[0][0]}-${seg[1][0]}`}>
+                        {/* Outer Glow */}
+                        <Polyline
+                            positions={seg}
+                            pathOptions={{
+                                color: "#10B981",
+                                weight: 9,
+                                opacity: 0.35,
+                                lineCap: "round",
+                                lineJoin: "round",
+                            }}
+                        />
+                        {/* Core Line */}
+                        <Polyline
+                            positions={seg}
+                            pathOptions={{
+                                color: "#059669",
+                                weight: 5,
+                                opacity: 1,
+                                lineCap: "round",
+                                lineJoin: "round",
+                            }}
+                        />
+                    </React.Fragment>
                 ))}
 
                 {/* Moving Freight Vehicle Icon during animation */}
