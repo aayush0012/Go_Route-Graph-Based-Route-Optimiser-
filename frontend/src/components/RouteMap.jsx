@@ -364,19 +364,19 @@ function RouteMap({
                     <>
                         {/* Outer Glow */}
                         <Polyline
-                            key="active-route-glow"
+                            key={`active-route-glow-${visibleCoords.map(c => `${c[0]}_${c[1]}`).join("-")}`}
                             positions={visibleCoords}
                             pathOptions={{
                                 color: "#10B981",
                                 weight: 10,
-                                opacity: 0.35,
+                                opacity: 0.45,
                                 lineCap: "round",
                                 lineJoin: "round",
                             }}
                         />
                         {/* Core Emerald Line */}
                         <Polyline
-                            key="active-route-core"
+                            key={`active-route-core-${visibleCoords.map(c => `${c[0]}_${c[1]}`).join("-")}`}
                             positions={visibleCoords}
                             pathOptions={{
                                 color: "#059669",
