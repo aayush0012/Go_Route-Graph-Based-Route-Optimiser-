@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import Layout from "../components/Layout";
+import { restoreMasterNetwork } from "../services/masterNetwork";
 import "./Roads.css";
 
 function Roads() {
@@ -24,7 +25,7 @@ function Roads() {
         try {
             setIsResetting(true);
             setErrorMsg("");
-            await api.post("/cities/reset-to-master");
+            await restoreMasterNetwork(api);
             await Promise.all([fetchCities(), fetchRoads()]);
         } catch (error) {
             console.log(error);

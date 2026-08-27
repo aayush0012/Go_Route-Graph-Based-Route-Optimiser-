@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import Layout from "../components/Layout";
 import { getCoordinatesForCityName } from "../components/RouteMap";
+import { restoreMasterNetwork } from "../services/masterNetwork";
 import "./Cities.css";
 
 function Cities() {
@@ -31,7 +32,7 @@ function Cities() {
         try {
             setIsResetting(true);
             setErrorMsg("");
-            await api.post("/cities/reset-to-master");
+            await restoreMasterNetwork(api);
             await fetchCities();
         } catch (error) {
             console.log(error);
