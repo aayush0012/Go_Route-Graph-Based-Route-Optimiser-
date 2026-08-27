@@ -121,10 +121,48 @@ function RoutePlanner() {
 
             const response = await api.post("/route/", payload);
 
-            setDistance(response.data.distance);
-            setPath(response.data.path || []);
-            setPathNodes(response.data.path_nodes || []);
-            setSegments(response.data.segments || []);
+            const rawDist = response.data.distance;
+            const rawPath = response.data.path || [];
+            let resolvedNodes = response.data.path_nodes || [];
+            let resolvedSegments = response.data.segments || [];
+
+            // Robust fallback if backend only returned path strings
+            if (rawPath.length >= 2) {
+                if (resolvedNodes.length === 0) {
+                    resolvedNodes = rawPath.map((name) => {
+                        const c = cities.find(city => city.name === name || (city.name && city.name.toLowerCase() === name.toLowerCase()));
+                        return {
+                            id: c ? c.id : null,
+                            name: name,
+                            lat: c ? c.latitude : null,
+                            lng: c ? c.longitude : null,
+                        };
+                    });
+                }
+
+                if (resolvedSegments.length === 0) {
+                    const avgDist = rawDist ? Math.round(rawDist / (rawPath.length - 1)) : 0;
+                    resolvedSegments = [];
+                    for (let i = 0; i < rawPath.length - 1; i++) {
+                        const sName = rawPath[i];
+                        const dName = rawPath[i + 1];
+                        const sCity = cities.find(c => c.name === sName);
+                        const dCity = cities.find(c => c.name === dName);
+                        resolvedSegments.push({
+                            source: sName,
+                            destination: dName,
+                            distance: avgDist,
+                            source_coords: sCity ? [sCity.latitude, sCity.longitude] : null,
+                            dest_coords: dCity ? [dCity.latitude, dCity.longitude] : null,
+                        });
+                    }
+                }
+            }
+
+            setDistance(rawDist);
+            setPath(rawPath);
+            setPathNodes(resolvedNodes);
+            setSegments(resolvedSegments);
             setOptimalRoute(response.data.optimal_route || null);
         } catch (error) {
             setDistance(null);
@@ -371,6 +409,7 @@ function RoutePlanner() {
                             stopCityIds={stops}
                             routeSegments={segments}
                             routePathNodes={pathNodes}
+                            routePathNames={path}
                             optimalPathNodes={optimalRoute?.path_nodes || []}
                             onSelectCity={handleSelectCityFromMap}
                         />

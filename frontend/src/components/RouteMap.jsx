@@ -156,12 +156,14 @@ function RouteMap({
     stopCityIds = [],
     routeSegments = [],
     routePathNodes = [],
+    routePathNames = [],
     optimalPathNodes = [],
     onSelectCity,
 }) {
     const safeCities = Array.isArray(cities) ? cities : [];
     const safeRoads = Array.isArray(roads) ? roads : [];
     const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
+    const safePathNames = Array.isArray(routePathNames) ? routePathNames : [];
 
     // Map cities with valid coordinates
     const validCities = useMemo(() => {
@@ -178,7 +180,7 @@ function RouteMap({
             }
 
             if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-                return { ...c, latitude: lat, longitude: lng };
+                return { ...c, latitude: Number(lat), longitude: Number(lng) };
             }
             return null;
         }).filter(Boolean);
@@ -210,7 +212,7 @@ function RouteMap({
                         [lat, lng] = fallback;
                     }
                 }
-                return (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) ? [lat, lng] : null;
+                return (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) ? [Number(lat), Number(lng)] : null;
             }).filter(Boolean);
 
             if (coords.length >= 2) return coords;
@@ -220,30 +222,39 @@ function RouteMap({
         if (routeSegments && routeSegments.length > 0) {
             const coords = [];
             routeSegments.forEach((seg) => {
-                let s = seg.source_coords;
-                let d = seg.dest_coords;
-
-                if (!s && seg.source) {
-                    s = getCoordinatesForCityName(seg.source);
-                }
-                if (!d && seg.destination) {
-                    d = getCoordinatesForCityName(seg.destination);
-                }
+                let s = seg.source_coords || (seg.source ? getCoordinatesForCityName(seg.source) : null);
+                let d = seg.dest_coords || (seg.destination ? getCoordinatesForCityName(seg.destination) : null);
 
                 if (s && d && !isNaN(s[0]) && !isNaN(d[0])) {
-                    if (coords.length === 0) coords.push(s);
-                    coords.push(d);
+                    if (coords.length === 0) coords.push([Number(s[0]), Number(s[1])]);
+                    coords.push([Number(d[0]), Number(d[1])]);
                 }
             });
             if (coords.length >= 2) return coords;
         }
 
+        // 3. Third priority: from safePathNames (array of city names)
+        if (safePathNames.length >= 2) {
+            const coords = safePathNames.map((name) => {
+                const matched = validCities.find(c => c.name && c.name.toLowerCase().trim() === name.toLowerCase().trim())
+                    || validCities.find(c => c.name && (c.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(c.name.toLowerCase())));
+                if (matched) return [Number(matched.latitude), Number(matched.longitude)];
+                const fallback = getCoordinatesForCityName(name);
+                return fallback ? [Number(fallback[0]), Number(fallback[1])] : null;
+            }).filter(Boolean);
+
+            if (coords.length >= 2) return coords;
+        }
+
         return [];
-    }, [safePathNodes, routeSegments, cityMap]);
+    }, [safePathNodes, routeSegments, safePathNames, cityMap, validCities]);
 
     const hasActiveRoute = activeRouteCoordinates.length >= 2;
     const pathCityIds = new Set(safePathNodes.map(n => Number(n.id)));
-    const pathCityNames = new Set(safePathNodes.map(n => n.name ? n.name.toLowerCase().trim() : ""));
+    const pathCityNames = new Set([
+        ...safePathNodes.map(n => n.name ? n.name.toLowerCase().trim() : ""),
+        ...safePathNames.map(name => name ? name.toLowerCase().trim() : "")
+    ]);
 
     // Background road network lines
     const allRoadPolylines = useMemo(() => {
