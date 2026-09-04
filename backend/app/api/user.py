@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -12,15 +11,21 @@ from app.services.workspace_service import seed_user_workspace
 
 router = APIRouter(tags=["Authentication"])
 
-security = HTTPBearer()
+# Cookie name used throughout
+COOKIE_NAME = "access_token"
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str = Cookie(None, alias=COOKIE_NAME),
     db: Session = Depends(get_db)
 ) -> User:
-    """Reusable FastAPI dependency to extract and return the authenticated User model."""
-    email = verify_access_token(credentials.credentials)
+    """Reusable FastAPI dependency — reads JWT from HttpOnly cookie."""
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    email = verify_access_token(access_token)
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(
@@ -57,18 +62,18 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
+def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user.email).first()
     if not existing_user:
         raise HTTPException(
-            status_code=404,
-            detail="User not found"
+            status_code=401,
+            detail="Invalid credentials"
         )
 
     if not verify_password(user.password, existing_user.password):
         raise HTTPException(
             status_code=401,
-            detail="Invalid password"
+            detail="Invalid credentials"
         )
 
     # Ensure existing user has initial data seeded
@@ -76,20 +81,23 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not has_cities:
         seed_user_workspace(existing_user.id, db)
 
-    token = create_access_token(
-        {
-            "sub": existing_user.email
-        }
+    token = create_access_token({"sub": existing_user.email})
+
+    # Set JWT as HttpOnly cookie — JS cannot read this
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400    # 24 hours
     )
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return {"message": "Login successful"}
 
 
 @router.post("/login/guest")
-def guest_login(db: Session = Depends(get_db)):
+def guest_login(response: Response, db: Session = Depends(get_db)):
     guest_email = "guest@goroute.com"
     guest_user = db.query(User).filter(User.email == guest_email).first()
 
@@ -108,16 +116,26 @@ def guest_login(db: Session = Depends(get_db)):
     if not has_cities:
         seed_user_workspace(guest_user.id, db)
 
-    token = create_access_token(
-        {
-            "sub": guest_user.email
-        }
+    token = create_access_token({"sub": guest_user.email})
+
+    # Set JWT as HttpOnly cookie — JS cannot read this
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=86400    # 24 hours
     )
 
-    return {
-        "access_token": token,
-        "token_type": "bearer"
-    }
+    return {"message": "Guest login successful"}
+
+
+@router.post("/logout")
+def logout(response: Response):
+    """Clear the HttpOnly auth cookie to log the user out."""
+    response.delete_cookie(key=COOKIE_NAME, samesite="lax")
+    return {"message": "Logged out successfully"}
 
 
 @router.get("/me")

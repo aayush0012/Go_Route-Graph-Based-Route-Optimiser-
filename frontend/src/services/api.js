@@ -5,21 +5,14 @@ const cleanBaseURL = rawBaseURL.replace(/\/+$/, "");
 
 const api = axios.create({
     baseURL: cleanBaseURL,
+    withCredentials: true, // Send HttpOnly cookies on every request automatically
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
+// Redirect to login on 401 — cookie is managed by the browser, nothing to clear manually
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem("token");
             if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
                 window.location.href = "/login";
             }

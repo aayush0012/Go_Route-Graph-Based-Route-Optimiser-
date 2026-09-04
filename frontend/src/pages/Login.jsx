@@ -19,16 +19,9 @@ function Login() {
         setErrorMsg("");
 
         try {
-            const response = await api.post("/login", {
-                email,
-                password,
-            });
+            await api.post("/login", { email, password });
 
-            localStorage.setItem(
-                "token",
-                response.data.access_token
-            );
-
+            // No token to store — server sets HttpOnly cookie automatically
             navigate("/dashboard");
         } catch (error) {
             const detail = error.response?.data?.detail;
@@ -43,13 +36,9 @@ function Login() {
         setIsGuestLoading(true);
         setErrorMsg("");
         try {
-            const response = await api.post("/login/guest");
+            await api.post("/login/guest");
 
-            localStorage.setItem(
-                "token",
-                response.data.access_token
-            );
-
+            // No token to store — server sets HttpOnly cookie automatically
             navigate("/dashboard");
         } catch (error) {
             const detail = error.response?.data?.detail;

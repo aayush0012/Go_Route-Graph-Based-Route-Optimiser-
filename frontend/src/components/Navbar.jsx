@@ -17,12 +17,7 @@ function Navbar() {
                 const res = await api.get("/me");
                 setUser(res.data);
             } catch (err) {
-                const localUser = localStorage.getItem("user");
-                if (localUser) {
-                    try {
-                        setUser(JSON.parse(localUser));
-                    } catch (e) {}
-                }
+                // Cookie invalid or expired — user will be redirected by ProtectedRoute
             }
         };
         fetchUser();
@@ -39,9 +34,12 @@ function Navbar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+    const handleLogout = async () => {
+        try {
+            await api.post("/logout"); // Backend clears the HttpOnly cookie
+        } catch (err) {
+            // Proceed with redirect regardless
+        }
         navigate("/");
     };
 
