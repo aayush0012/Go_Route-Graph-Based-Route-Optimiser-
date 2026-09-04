@@ -20,7 +20,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",           # Vite dev server
         "http://localhost:3000",           # Alternative dev port
-        "https://frontend-proj-qphw.onrender.com",  # Production frontend (update if different)
+        "https://backend-proj-blue.vercel.app",  # Production frontend (Vercel)
     ],
     allow_credentials=True,   # Required for cookies to be sent/received
     allow_methods=["*"],

@@ -14,8 +14,11 @@ router = APIRouter(tags=["Authentication"])
 
 # Cookie name used throughout
 COOKIE_NAME = "access_token"
-# Secure=True requires HTTPS — disable for local HTTP development
-COOKIE_SECURE = os.getenv("ENV", "development") == "production"
+# SameSite=none is required for cross-origin cookies (frontend:5173 -> backend:8000)
+# SameSite=none REQUIRES Secure=True — so we need HTTPS even in dev, OR use a Vite proxy
+IS_PRODUCTION = os.getenv("ENV", "development") == "production"
+COOKIE_SECURE = True          # SameSite=none always requires Secure
+COOKIE_SAMESITE = "none"      # Allows cross-origin credentialed requests
 
 
 def get_current_user(
@@ -92,7 +95,7 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         value=token,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="lax",
+        samesite=COOKIE_SAMESITE,
         max_age=86400    # 24 hours
     )
 
@@ -127,7 +130,7 @@ def guest_login(response: Response, db: Session = Depends(get_db)):
         value=token,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="lax",
+        samesite=COOKIE_SAMESITE,
         max_age=86400    # 24 hours
     )
 
@@ -137,7 +140,7 @@ def guest_login(response: Response, db: Session = Depends(get_db)):
 @router.post("/logout")
 def logout(response: Response):
     """Clear the HttpOnly auth cookie to log the user out."""
-    response.delete_cookie(key=COOKIE_NAME, samesite="lax")
+    response.delete_cookie(key=COOKIE_NAME, samesite=COOKIE_SAMESITE)
     return {"message": "Logged out successfully"}
 
 
