@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
+import os
 
 from app.database.database import get_db
 from app.models.user import User
@@ -13,6 +14,8 @@ router = APIRouter(tags=["Authentication"])
 
 # Cookie name used throughout
 COOKIE_NAME = "access_token"
+# Secure=True requires HTTPS — disable for local HTTP development
+COOKIE_SECURE = os.getenv("ENV", "development") == "production"
 
 
 def get_current_user(
@@ -88,7 +91,7 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=True,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=86400    # 24 hours
     )
@@ -123,7 +126,7 @@ def guest_login(response: Response, db: Session = Depends(get_db)):
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=True,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=86400    # 24 hours
     )
