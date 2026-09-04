@@ -13,8 +13,12 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
-                window.location.href = "/login";
+            const url = error.config?.url || "";
+            // Skip redirect for /me — ProtectedRoute handles that itself
+            const isProtectedRouteCheck = url.includes("/me");
+            const isAuthPage = window.location.pathname === "/" || window.location.pathname === "/register";
+            if (!isProtectedRouteCheck && !isAuthPage) {
+                window.location.href = "/";  // login is at "/"
             }
         }
         return Promise.reject(error);

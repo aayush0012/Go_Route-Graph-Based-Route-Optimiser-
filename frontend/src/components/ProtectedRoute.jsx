@@ -14,7 +14,18 @@ function ProtectedRoute({ children }) {
     }, []);
 
     if (authState === "loading") {
-        return null; // or a spinner
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+                background: "#0a0a0f",
+                color: "#888"
+            }}>
+                Verifying session...
+            </div>
+        );
     }
 
     if (authState === "unauthenticated") {
