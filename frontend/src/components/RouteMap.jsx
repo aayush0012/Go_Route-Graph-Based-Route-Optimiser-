@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { fetchRealHighwayRoutes } from "../services/tomtomRouting";
 import "./RouteMap.css";
 
 // Helper component to auto-focus and zoom bounds on the active route or all points
@@ -82,7 +83,7 @@ export const getCoordinatesForCityName = (rawName) => {
     return null;
 };
 
-const createNodeIcon = (cityName, role, isAnimatedCurrent = false) => {
+const createNodeIcon = (cityName, role) => {
     const isMuted = role === "unselected";
 
     if (isMuted) {
@@ -111,12 +112,11 @@ const createNodeIcon = (cityName, role, isAnimatedCurrent = false) => {
     }
 
     const shortLabel = cityName.replace(/\s*\([^)]*\)/g, "").trim();
-    const animClass = isAnimatedCurrent ? "current-frontier-node" : "";
 
     return L.divIcon({
         className: "compact-node-icon-container",
         html: `
-            <div class="node-marker-wrapper ${role} ${animClass}">
+            <div class="node-marker-wrapper ${role}">
                 <div class="node-halo">
                     <div class="node-dot">
                         <span class="inner-core"></span>
@@ -134,19 +134,6 @@ const createNodeIcon = (cityName, role, isAnimatedCurrent = false) => {
     });
 };
 
-const createFreightMarkerIcon = () => {
-    return L.divIcon({
-        className: "freight-transit-icon-container",
-        html: `
-            <div class="freight-pulse-beacon">
-                <div class="freight-pulse-ring"></div>
-                <div class="freight-pulse-core">🚚</div>
-            </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-    });
-};
 
 function RouteMap({
     cities = [],
@@ -157,13 +144,19 @@ function RouteMap({
     routeSegments = [],
     routePathNodes = [],
     routePathNames = [],
-    optimalPathNodes = [],
+    availableRoutes = [],
+    selectedRouteId = "fastest",
     onSelectCity,
+    onSelectRouteOption,
+    onHighwaySummary,
+    onRoutesLoaded,
 }) {
     const safeCities = Array.isArray(cities) ? cities : [];
     const safeRoads = Array.isArray(roads) ? roads : [];
     const safePathNodes = Array.isArray(routePathNodes) ? routePathNodes : [];
     const safePathNames = Array.isArray(routePathNames) ? routePathNames : [];
+
+    const [internalRoutes, setInternalRoutes] = useState([]);
 
     // Map cities with valid coordinates
     const validCities = useMemo(() => {
@@ -249,22 +242,74 @@ function RouteMap({
         return [];
     }, [safePathNodes, routeSegments, safePathNames, cityMap, validCities]);
 
-    const hasActiveRoute = activeRouteCoordinates.length >= 2;
+    // Fetch real highway curves from TomTom/OSRM
+    useEffect(() => {
+        let isMounted = true;
+        if (activeRouteCoordinates.length >= 2) {
+            fetchRealHighwayRoutes(activeRouteCoordinates).then((res) => {
+                if (!isMounted) return;
+                if (res && res.routes && res.routes.length > 0) {
+                    setInternalRoutes(res.routes);
+                    if (onRoutesLoaded) {
+                        onRoutesLoaded(res.routes);
+                    }
+                    if (onHighwaySummary) {
+                        onHighwaySummary(res.routes[0]);
+                    }
+                } else {
+                    setInternalRoutes([]);
+                    if (onRoutesLoaded) onRoutesLoaded([]);
+                }
+            }).catch(() => {
+                if (isMounted) {
+                    setInternalRoutes([]);
+                    if (onRoutesLoaded) onRoutesLoaded([]);
+                }
+            });
+        } else {
+            setInternalRoutes([]);
+            if (onRoutesLoaded) onRoutesLoaded([]);
+        }
+        return () => { isMounted = false; };
+    }, [activeRouteCoordinates]);
+
+    // Use availableRoutes prop if passed, otherwise fall back to internalRoutes
+    const displayRoutes = (availableRoutes && availableRoutes.length > 0) ? availableRoutes : internalRoutes;
+
+    const currentSelectedRoute = useMemo(() => {
+        if (!displayRoutes || displayRoutes.length === 0) return null;
+        return displayRoutes.find(r => r.id === selectedRouteId) || displayRoutes[0];
+    }, [displayRoutes, selectedRouteId]);
+
+    const activeGeometry = currentSelectedRoute?.curvedCoordinates || (activeRouteCoordinates.length >= 2 ? activeRouteCoordinates : []);
+
     const pathCityIds = new Set(safePathNodes.map(n => Number(n.id)));
     const pathCityNames = new Set([
         ...safePathNodes.map(n => n.name ? n.name.toLowerCase().trim() : ""),
         ...safePathNames.map(name => name ? name.toLowerCase().trim() : "")
     ]);
 
-    // Background road network lines
+    // Background road network lines with computed highway travel economics
     const allRoadPolylines = useMemo(() => {
         return safeRoads.map((road) => {
             const src = cityMap[road.source_city_id];
             const dst = cityMap[road.destination_city_id];
             if (src && dst) {
+                const dist = Number(road.distance) || 0;
+                const totalHours = dist > 0 ? dist / 75 : 0;
+                const h = Math.floor(totalHours);
+                const m = Math.round((totalHours - h) * 60);
+                const durStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                const toll = dist >= 15 ? Math.round(dist * 1.8) : 0;
+                const fuel = Math.round(dist / 16);
                 return {
                     id: road.id,
-                    distance: road.distance,
+                    distance: dist,
+                    srcName: src.name,
+                    dstName: dst.name,
+                    durStr,
+                    tollStr: toll > 0 ? `₹${toll.toLocaleString("en-IN")}` : "No Tolls",
+                    fuelLiters: fuel,
                     positions: [
                         [src.latitude, src.longitude],
                         [dst.latitude, dst.longitude],
@@ -274,67 +319,6 @@ function RouteMap({
             return null;
         }).filter(Boolean);
     }, [safeRoads, cityMap]);
-
-    // Animation state
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [animationIndex, setAnimationIndex] = useState(0);
-    const [animSpeed, setAnimSpeed] = useState(1000);
-    const [freightPosition, setFreightPosition] = useState(null);
-    const animTimerRef = useRef(null);
-
-    useEffect(() => {
-        setIsAnimating(false);
-        setFreightPosition(null);
-        setAnimationIndex(activeRouteCoordinates.length);
-    }, [activeRouteCoordinates]);
-
-    useEffect(() => {
-        if (!isAnimating || activeRouteCoordinates.length < 2) {
-            clearInterval(animTimerRef.current);
-            return;
-        }
-
-        animTimerRef.current = setInterval(() => {
-            setAnimationIndex((prev) => {
-                const next = prev + 1;
-                if (next >= activeRouteCoordinates.length) {
-                    setIsAnimating(false);
-                    return activeRouteCoordinates.length;
-                }
-                setFreightPosition(activeRouteCoordinates[next]);
-                return next;
-            });
-        }, animSpeed);
-
-        return () => clearInterval(animTimerRef.current);
-    }, [isAnimating, activeRouteCoordinates, animSpeed]);
-
-    const startAnimation = () => {
-        if (activeRouteCoordinates.length >= 2) {
-            setAnimationIndex(1);
-            setFreightPosition(activeRouteCoordinates[0]);
-            setIsAnimating(true);
-        }
-    };
-
-    const togglePlay = () => {
-        if (animationIndex >= activeRouteCoordinates.length) {
-            startAnimation();
-        } else {
-            setIsAnimating(!isAnimating);
-        }
-    };
-
-    const resetAnimation = () => {
-        setIsAnimating(false);
-        setAnimationIndex(activeRouteCoordinates.length);
-        setFreightPosition(null);
-    };
-
-    // Visible coordinates for polyline
-    const visibleCoords = isAnimating
-        ? activeRouteCoordinates.slice(0, Math.max(2, animationIndex + 1))
-        : activeRouteCoordinates;
 
     const allPoints = validCities.map(c => [c.latitude, c.longitude]);
     const defaultCenter = [22.5937, 78.9629];
@@ -354,59 +338,177 @@ function RouteMap({
                 />
 
                 {/* Auto Zoom & Bounds Updater */}
-                <MapBoundsUpdater routePoints={activeRouteCoordinates} allPoints={allPoints} />
+                <MapBoundsUpdater routePoints={activeGeometry} allPoints={allPoints} />
 
-                {/* Background Road Network */}
+                {/* Background Road Network with Click Details */}
                 {allRoadPolylines.map((road) => (
                     <Polyline
                         key={`road-${road.id}`}
                         positions={road.positions}
                         pathOptions={{
                             color: "#94A3B8",
-                            weight: 2,
-                            opacity: 0.45,
+                            weight: 3,
+                            opacity: 0.5,
                             dashArray: "5, 5",
                         }}
-                    />
+                    >
+                        <Tooltip direction="top" offset={[0, -5]} opacity={0.9}>
+                            <span>{road.srcName} ➔ {road.dstName} ({road.distance} km) — Click for details</span>
+                        </Tooltip>
+                        <Popup className="path-detail-popup">
+                            <div className="path-popup-card">
+                                <div className="path-popup-header">
+                                    <span className="path-popup-badge">Road Segment</span>
+                                    <h4 className="path-popup-title">{road.srcName} ➔ {road.dstName}</h4>
+                                </div>
+                                <div className="path-popup-grid">
+                                    <div className="path-stat-box">
+                                        <span className="stat-box-label">📍 Distance</span>
+                                        <span className="stat-box-val">{road.distance} km</span>
+                                    </div>
+                                    <div className="path-stat-box">
+                                        <span className="stat-box-label">⏱️ Driving Time</span>
+                                        <span className="stat-box-val">{road.durStr}</span>
+                                    </div>
+                                    <div className="path-stat-box">
+                                        <span className="stat-box-label">💳 FASTag Toll</span>
+                                        <span className="stat-box-val highlight-toll">{road.tollStr}</span>
+                                    </div>
+                                    <div className="path-stat-box">
+                                        <span className="stat-box-label">⛽ Est. Fuel</span>
+                                        <span className="stat-box-val">~{road.fuelLiters} L</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </Popup>
+                    </Polyline>
                 ))}
 
-                {/* Active Route Polylines */}
-                {visibleCoords.length >= 2 && (
-                    <>
-                        {/* Outer Glow */}
+                {/* Inactive Alternative Routes */}
+                {displayRoutes.map((route) => {
+                    const isCurrent = route.id === (currentSelectedRoute?.id || "fastest");
+                    if (isCurrent || !route.curvedCoordinates || route.curvedCoordinates.length < 2) return null;
+
+                    return (
                         <Polyline
-                            key={`active-route-glow-${visibleCoords.map(c => `${c[0]}_${c[1]}`).join("-")}`}
-                            positions={visibleCoords}
+                            key={`alt-route-${route.id}`}
+                            positions={route.curvedCoordinates}
                             pathOptions={{
-                                color: "#10B981",
-                                weight: 10,
-                                opacity: 0.45,
+                                color: "#64748B",
+                                weight: 4.5,
+                                opacity: 0.7,
+                                dashArray: "6, 8",
+                                lineCap: "round",
+                                lineJoin: "round",
+                            }}
+                            eventHandlers={{
+                                click: () => {
+                                    if (onSelectRouteOption) {
+                                        onSelectRouteOption(route.id);
+                                    }
+                                },
+                            }}
+                        >
+                            <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+                                <span>{route.label}: {route.realDistanceKm} km ({route.durationString}, {route.tollString}) — Click to inspect & select</span>
+                            </Tooltip>
+                            <Popup className="path-detail-popup">
+                                <div className="path-popup-card">
+                                    <div className="path-popup-header">
+                                        <span className="path-popup-badge alt">Alternative Strategy</span>
+                                        <h4 className="path-popup-title">{route.label}</h4>
+                                        {route.tag && <p className="path-popup-tag">{route.tag}</p>}
+                                    </div>
+                                    <div className="path-popup-grid">
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">📍 Distance</span>
+                                            <span className="stat-box-val">{route.realDistanceKm} km</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">⏱️ Driving Time</span>
+                                            <span className="stat-box-val">{route.durationString}</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">💳 FASTag Toll</span>
+                                            <span className="stat-box-val highlight-toll">{route.tollString}</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">⛽ Est. Fuel</span>
+                                            <span className="stat-box-val">~{route.fuelNeeded} L</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn-popup-select-route"
+                                        onClick={() => onSelectRouteOption && onSelectRouteOption(route.id)}
+                                    >
+                                        Select This Route
+                                    </button>
+                                </div>
+                            </Popup>
+                        </Polyline>
+                    );
+                })}
+
+                {/* Active Selected Route Polyline (Bold Royal Blue Glow + Core Line) */}
+                {activeGeometry.length >= 2 && (
+                    <>
+                        {/* Outer Blue Glow */}
+                        <Polyline
+                            key={`active-route-glow-${activeGeometry.length}`}
+                            positions={activeGeometry}
+                            pathOptions={{
+                                color: "#3B82F6",
+                                weight: 9,
+                                opacity: 0.35,
                                 lineCap: "round",
                                 lineJoin: "round",
                             }}
                         />
-                        {/* Core Emerald Line */}
+                        {/* Core Route Line */}
                         <Polyline
-                            key={`active-route-core-${visibleCoords.map(c => `${c[0]}_${c[1]}`).join("-")}`}
-                            positions={visibleCoords}
+                            key={`active-route-core-${activeGeometry.length}`}
+                            positions={activeGeometry}
                             pathOptions={{
-                                color: "#059669",
-                                weight: 5,
+                                color: "#1D4ED8",
+                                weight: 5.5,
                                 opacity: 1,
                                 lineCap: "round",
                                 lineJoin: "round",
                             }}
-                        />
+                        >
+                            <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
+                                <span><strong>{currentSelectedRoute?.label || "Active Route"}</strong>: {currentSelectedRoute?.realDistanceKm || ""} km • Click for full journey breakdown</span>
+                            </Tooltip>
+                            <Popup className="path-detail-popup">
+                                <div className="path-popup-card active-theme">
+                                    <div className="path-popup-header">
+                                        <span className="path-popup-badge active">Active Selected Route</span>
+                                        <h4 className="path-popup-title">{currentSelectedRoute?.label || "Optimized Journey"}</h4>
+                                        {currentSelectedRoute?.tag && <p className="path-popup-tag">{currentSelectedRoute.tag}</p>}
+                                    </div>
+                                    <div className="path-popup-grid">
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">📍 Total Distance</span>
+                                            <span className="stat-box-val highlight-dist">{currentSelectedRoute?.realDistanceKm || (routeSegments.reduce((sum, s) => sum + (s.distance || 0), 0).toFixed(1))} km</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">⏱️ Total Driving Time</span>
+                                            <span className="stat-box-val">{currentSelectedRoute?.durationString || "Live Calculation"}</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">💳 FASTag Toll Cost</span>
+                                            <span className="stat-box-val highlight-toll">{currentSelectedRoute?.tollString || "₹0"}</span>
+                                        </div>
+                                        <div className="path-stat-box">
+                                            <span className="stat-box-label">⛽ Total Fuel Needed</span>
+                                            <span className="stat-box-val">~{currentSelectedRoute?.fuelNeeded || 0} Liters</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Popup>
+                        </Polyline>
                     </>
-                )}
-
-                {/* Freight Icon during animation */}
-                {freightPosition && (
-                    <Marker
-                        position={freightPosition}
-                        icon={createFreightMarkerIcon()}
-                        zIndexOffset={1000}
-                    />
                 )}
 
                 {/* City Nodes */}
@@ -425,13 +527,11 @@ function RouteMap({
                     else if (isStop) role = "stop";
                     else if (isPathNode) role = "path-node";
 
-                    const isCurrentFrontier = isAnimating && freightPosition && freightPosition[0] === city.latitude && freightPosition[1] === city.longitude;
-
                     return (
                         <Marker
                             key={`city-${city.id}`}
                             position={[city.latitude, city.longitude]}
-                            icon={createNodeIcon(city.name, role, isCurrentFrontier)}
+                            icon={createNodeIcon(city.name, role)}
                         >
                             <Popup className="map-popup">
                                 <h3>{city.name}</h3>
@@ -459,50 +559,10 @@ function RouteMap({
                     );
                 })}
             </MapContainer>
-
-            {/* Animation Controls */}
-            {hasActiveRoute && (
-                <div className="traversal-animator-dock">
-                    <button
-                        type="button"
-                        className="anim-play-btn"
-                        onClick={togglePlay}
-                        title={isAnimating ? "Pause Simulation" : "Play Route Simulation"}
-                    >
-                        {isAnimating ? "⏸ Pause" : "▶ Simulate Route"}
-                    </button>
-
-                    <div className="anim-progress-text">
-                        <span>Hop {animationIndex}/{activeRouteCoordinates.length - 1}</span>
-                    </div>
-
-                    <button
-                        type="button"
-                        className={`anim-speed-btn ${animSpeed === 1000 ? "active" : ""}`}
-                        onClick={() => setAnimSpeed(1000)}
-                    >
-                        1x
-                    </button>
-                    <button
-                        type="button"
-                        className={`anim-speed-btn ${animSpeed === 500 ? "active" : ""}`}
-                        onClick={() => setAnimSpeed(500)}
-                    >
-                        2x
-                    </button>
-
-                    <button
-                        type="button"
-                        className="anim-reset-btn"
-                        onClick={resetAnimation}
-                        title="Show Full Route"
-                    >
-                        ⏮ Reset
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
 
 export default RouteMap;
+
+

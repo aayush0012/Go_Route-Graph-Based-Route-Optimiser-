@@ -14,6 +14,7 @@ router = APIRouter(
 
 
 @router.post("/")
+@router.post("", include_in_schema=False)
 def find_shortest_route(
     route_req: RouteRequest,
     db: Session = Depends(get_db),

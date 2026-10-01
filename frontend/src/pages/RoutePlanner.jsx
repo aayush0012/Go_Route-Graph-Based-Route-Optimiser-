@@ -19,6 +19,9 @@ function RoutePlanner() {
     const [pathNodes, setPathNodes] = useState([]);
     const [segments, setSegments] = useState([]);
     const [optimalRoute, setOptimalRoute] = useState(null);
+    const [tspSavings, setTspSavings] = useState(null);
+    const [availableRoutes, setAvailableRoutes] = useState([]);
+    const [selectedRouteId, setSelectedRouteId] = useState("fastest");
 
     const [isSearching, setIsSearching] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
@@ -61,6 +64,9 @@ function RoutePlanner() {
         setPathNodes([]);
         setSegments([]);
         setOptimalRoute(null);
+        setTspSavings(null);
+        setAvailableRoutes([]);
+        setSelectedRouteId("fastest");
         setErrorMsg("");
     };
 
@@ -80,12 +86,14 @@ function RoutePlanner() {
 
     const removeStop = (indexToRemove) => {
         setStops(stops.filter((_, idx) => idx !== indexToRemove));
+        setTspSavings(null);
     };
 
     const handleStopChange = (index, value) => {
         const updated = [...stops];
         updated[index] = value;
         setStops(updated);
+        setTspSavings(null);
     };
 
     const handleSelectCityFromMap = (cityId, role) => {
@@ -96,7 +104,7 @@ function RoutePlanner() {
         }
     };
 
-    const findRoute = async () => {
+    const findRoute = async (optimize = false) => {
         if (!sourceCity || !destinationCity) {
             setErrorMsg("Please select both Origin and Destination.");
             return;
@@ -117,6 +125,7 @@ function RoutePlanner() {
                 destination_city_id: Number(destinationCity),
                 stops: parsedStops.length > 0 ? parsedStops : undefined,
                 algorithm: algorithm,
+                optimize_stops: Boolean(optimize),
             };
 
             const response = await api.post("/route/", payload);
@@ -164,69 +173,77 @@ function RoutePlanner() {
             setPathNodes(resolvedNodes);
             setSegments(resolvedSegments);
             setOptimalRoute(response.data.optimal_route || null);
+
+            if (response.data.tsp_savings) {
+                setTspSavings(response.data.tsp_savings);
+                if (optimize && response.data.tsp_savings.optimized_stops) {
+                    setStops(response.data.tsp_savings.optimized_stops.map(String));
+                }
+            } else {
+                setTspSavings(null);
+            }
         } catch (error) {
             setDistance(null);
             setPath([]);
             setPathNodes([]);
             setSegments([]);
             setOptimalRoute(null);
+            setTspSavings(null);
             setErrorMsg(error.response?.data?.detail || "No connected path found between selected hubs.");
         } finally {
             setIsSearching(false);
         }
     };
 
-    // Derived metrics
-    const averageSpeed = 65; // km/h
-    const totalHours = distance ? distance / averageSpeed : 0;
+    const applyTspOrdering = () => {
+        if (tspSavings && tspSavings.optimized_stops) {
+            setStops(tspSavings.optimized_stops.map(String));
+            findRoute(true);
+        }
+    };
+
+    // Active Route Selection (Fastest vs Cheapest)
+    const currentRoute = availableRoutes.find(r => r.id === selectedRouteId) || (availableRoutes.length > 0 ? availableRoutes[0] : null);
+
+    // Derived metrics: Realistic passenger car / SUV journey economics
+    const averageSpeed = 75; // km/h average highway speed
+    const baseDistance = distance || 0;
+    const totalHours = baseDistance ? baseDistance / averageSpeed : 0;
     const hours = Math.floor(totalHours);
     const minutes = Math.round((totalHours - hours) * 60);
-    const durationString = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-    const estimatedFuel = distance ? Math.round(distance / 4) : 0;
-    const estimatedCost = distance ? (distance * 35).toLocaleString("en-IN") : "0";
+    const defaultDurationString = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    const carMileage = 16; // 16 km per liter
+    const tollRatePerKm = 1.8; // ₹1.80 per km (NHAI standard 4-lane passenger car FASTag average)
+
+    const defaultFuel = baseDistance ? Math.round(baseDistance / carMileage) : 0;
+    const defaultTollCost = baseDistance >= 15 ? Math.round(baseDistance * tollRatePerKm) : 0;
+    const defaultTollString = defaultTollCost > 0 ? `₹${defaultTollCost.toLocaleString("en-IN")}` : "No Tolls";
+
+    // Effective display metrics based on active selected route
+    const displayDistance = currentRoute ? currentRoute.realDistanceKm : baseDistance;
+    const displayDuration = currentRoute ? currentRoute.durationString : defaultDurationString;
+    const displayFuel = currentRoute ? currentRoute.fuelNeeded : defaultFuel;
+    const displayToll = currentRoute ? currentRoute.tollString : defaultTollString;
+
 
     return (
         <Layout>
             <div className="goroute-layout-container">
-                {/* 1. Left Sub-Sidebar: Core Operations */}
-                <aside className="ops-sidebar">
-                    <div className="ops-header">
-                        <h2 className="ops-title">Core Operations</h2>
-                        <span className="ops-subtitle">GoRoute Precision Engine</span>
-                    </div>
-
-                    <button
-                        type="button"
-                        className="btn-new-optimization"
-                        onClick={resetOptimization}
-                    >
-                        + New Optimization
-                    </button>
-
-                    <nav className="ops-nav-menu">
-                        <Link to="/route" className="ops-nav-item active">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="19" r="2"/><path d="M12 17V12"/><path d="M12 12C12 9 8 8 6 6"/><path d="M12 12C12 9 16 8 18 6"/><polyline points="4 8 6 6 8 8"/><polyline points="16 8 18 6 20 8"/></svg>
-                            Route Planner
-                        </Link>
-                        <Link to="/cities" className="ops-nav-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="8" height="17" rx="0.5"/><rect x="13" y="9" width="8" height="12" rx="0.5"/><line x1="5.5" y1="8" x2="6.5" y2="8"/><line x1="8.5" y1="8" x2="9.5" y2="8"/></svg>
-                            Hub Management
-                        </Link>
-                        <Link to="/roads" className="ops-nav-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="6" y1="3" x2="6" y2="21" strokeDasharray="3 3"/><line x1="18" y1="3" x2="18" y2="21"/><line x1="3" y1="9" x2="9" y2="9"/><line x1="15" y1="15" x2="21" y2="15"/></svg>
-                            Road Pathways
-                        </Link>
-                        <Link to="/dashboard" className="ops-nav-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                            Dashboard Overview
-                        </Link>
-                    </nav>
-                </aside>
-
-                {/* 2. Middle Panel: Route Configuration & Itinerary Breakdown */}
+                {/* 1. Left Panel: Route Configuration & Itinerary Breakdown */}
                 <section className="config-itinerary-panel">
                     <div className="config-card">
-                        <h2 className="panel-title">Route Configuration</h2>
+                        <div className="config-header-row">
+                            <h2 className="panel-title">Route Configuration</h2>
+                            <button
+                                type="button"
+                                className="btn-reset-light"
+                                onClick={resetOptimization}
+                                title="Reset inputs and clear route"
+                            >
+                                Reset
+                            </button>
+                        </div>
 
                         {/* Origin Field */}
                         <div className="form-field">
@@ -283,25 +300,12 @@ function RoutePlanner() {
                             </select>
                         </div>
 
-                        {/* Algorithm Selector */}
-                        <div className="form-field">
-                            <label htmlFor="algorithm" className="field-label">Routing Algorithm</label>
-                            <select
-                                id="algorithm"
-                                className="styled-select"
-                                value={algorithm}
-                                onChange={(e) => setAlgorithm(e.target.value)}
-                                disabled={loadingCities}
-                            >
-                                <option value="dijkstra">Dijkstra (Shortest Distance)</option>
-                                <option value="a_star">A* Search (Spatial Heuristic)</option>
-                            </select>
-                        </div>
-
                         {/* Waypoints List */}
                         {stops.length > 0 && (
                             <div className="waypoints-subpanel">
-                                <span className="waypoints-subhead">Intermediate Stops:</span>
+                                <div className="waypoints-header-row">
+                                    <span className="waypoints-subhead">Intermediate Stops ({stops.length}):</span>
+                                </div>
                                 {stops.map((stopId, index) => (
                                     <div key={index} className="waypoint-item-row">
                                         <span className="stop-pill-tag">Stop {index + 1}</span>
@@ -341,61 +345,174 @@ function RoutePlanner() {
                         <button
                             type="button"
                             className="btn-calculate-dark"
-                            onClick={findRoute}
+                            onClick={() => findRoute(false)}
                             disabled={loadingCities || isSearching}
                         >
-                            {isSearching ? "Calculating Path..." : "Calculate Shortest Route"}
+                            {isSearching ? "Calculating Route..." : "Calculate Route"}
                         </button>
 
                         {errorMsg && <div className="panel-error-alert">{errorMsg}</div>}
                     </div>
 
-                    {/* Itinerary Breakdown Section with Integrated Metrics */}
+                    {/* Route & Trip Details Section with Clear Plain Language */}
                     <div className="itinerary-card">
-                        <h3 className="panel-title">Itinerary Breakdown</h3>
+                        <h3 className="panel-title">Route & Trip Details</h3>
 
-                        {distance !== null && (
+                        {/* Stop Sequence Optimization Suggestion Banner (Progressive Disclosure) */}
+                        {tspSavings && !tspSavings.is_optimized && tspSavings.can_save && (
+                            <div className="reorder-stops-banner">
+                                <div className="reorder-banner-header">
+                                    <span className="reorder-icon">💡</span>
+                                    <div className="reorder-text-content">
+                                        <strong className="reorder-title">Optimize Route for Distance & Cost</strong>
+                                        <span className="reorder-desc">
+                                            Reordering intermediate stops saves <strong>{tspSavings.saved_distance_km} km</strong> and <strong>~₹{tspSavings.saved_toll_inr} toll</strong> while keeping Origin and Destination fixed.
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn-apply-reorder"
+                                    onClick={applyTspOrdering}
+                                >
+                                    ⚡ Reorder Stops for Best Route ({tspSavings.optimized_stop_names?.join(" ➔ ")})
+                                </button>
+                            </div>
+                        )}
+
+                        {tspSavings && tspSavings.is_optimized && (
+                            <div className="reorder-applied-badge">
+                                <span className="reorder-check">✓</span>
+                                <span>Optimal Stop Sequence Applied (Saved {tspSavings.saved_distance_km} km & ₹{tspSavings.saved_toll_inr} toll)</span>
+                            </div>
+                        )}
+
+                        {/* Driving Route Strategy (Dual Fastest/Cheapest or Unified) */}
+                        {availableRoutes && availableRoutes.length >= 1 && (
+                            <div className="route-strategy-section">
+                                <span className="route-strategy-label">
+                                    {availableRoutes.length > 1 ? "Select Driving Route Strategy:" : "Driving Route Strategy:"}
+                                </span>
+                                <div className="route-strategy-grid">
+                                    {availableRoutes.map((r) => {
+                                        const isSelected = (currentRoute?.id === r.id);
+                                        return (
+                                            <button
+                                                key={r.id}
+                                                type="button"
+                                                className={`route-strategy-card ${isSelected ? "selected" : ""}`}
+                                                onClick={() => setSelectedRouteId(r.id)}
+                                            >
+                                                <div className="strategy-top-row">
+                                                    <span className="strategy-title">{r.label}</span>
+                                                    {r.tag && <span className="strategy-tag">{r.tag}</span>}
+                                                </div>
+                                                <div className="strategy-stats-row">
+                                                    <span className="strategy-stat">⏱️ {r.durationString}</span>
+                                                    <span className="strategy-stat">📍 {r.realDistanceKm} km</span>
+                                                    <span className="strategy-stat">💳 {r.tollString}</span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {path && path.length >= 2 && (
+                            <div className="trip-overview-banner">
+                                <span className="trip-overview-label">Full Route Journey:</span>
+                                <div className="trip-path-chips">
+                                    {path.map((cityName, idx) => {
+                                        const isFirst = idx === 0;
+                                        const isLast = idx === path.length - 1;
+                                        const tagClass = isFirst ? "origin" : isLast ? "destination" : "transit";
+                                        const roleText = isFirst ? "Origin" : isLast ? "Destination" : `Stop ${idx}`;
+
+                                        return (
+                                            <div key={idx} className="trip-node-step">
+                                                <div className={`path-chip ${tagClass}`}>
+                                                    <span className="chip-role">{roleText}:</span>
+                                                    <span className="chip-name">{cityName}</span>
+                                                </div>
+                                                {!isLast && <div className="path-step-connector">↓</div>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {(displayDistance > 0 || distance !== null) && (
                             <div className="itinerary-metrics-grid">
                                 <div className="metric-pill highlight">
                                     <span className="metric-lbl">Total Distance</span>
-                                    <span className="metric-val">{distance} km</span>
+                                    <span className="metric-val">{displayDistance} km</span>
                                 </div>
                                 <div className="metric-pill">
-                                    <span className="metric-lbl">Est. Time</span>
-                                    <span className="metric-val">{durationString}</span>
+                                    <span className="metric-lbl">Driving Time</span>
+                                    <span className="metric-val">{displayDuration}</span>
                                 </div>
                                 <div className="metric-pill">
-                                    <span className="metric-lbl">Est. Fuel</span>
-                                    <span className="metric-val">~{estimatedFuel} L</span>
+                                    <span className="metric-lbl">Fuel Needed</span>
+                                    <span className="metric-val">~{displayFuel} Liters</span>
                                 </div>
                                 <div className="metric-pill">
-                                    <span className="metric-lbl">Freight Cost</span>
-                                    <span className="metric-val">₹{estimatedCost}</span>
+                                    <span className="metric-lbl">Toll Cost</span>
+                                    <span className="metric-val">{displayToll}</span>
                                 </div>
                             </div>
                         )}
 
                         {segments && segments.length > 0 ? (
                             <div className="itinerary-cards-list">
-                                {segments.map((seg, idx) => (
-                                    <div key={idx} className="itinerary-step-card">
-                                        <div className="step-circle-badge">{idx + 1}</div>
-                                        <div className="step-content">
-                                            <div className="step-route-row">
-                                                <span className="step-route-name">{seg.source} ➔ {seg.destination}</span>
-                                                <span className="step-dist-val">{seg.distance} km</span>
+                                <span className="steps-header-lbl">Step-by-Step Driving Directions:</span>
+                                {segments.map((seg, idx) => {
+                                    const isFirst = idx === 0;
+                                    const isLast = idx === segments.length - 1;
+                                    let stepDescription = `Drive from ${seg.source} to ${seg.destination}`;
+                                    if (isFirst && segments.length === 1) {
+                                        stepDescription = `Drive directly from ${seg.source} to ${seg.destination}`;
+                                    } else if (isFirst) {
+                                        stepDescription = `Start at ${seg.source} and drive to ${seg.destination}`;
+                                    } else if (isLast) {
+                                        stepDescription = `Depart from ${seg.source} and reach final destination ${seg.destination}`;
+                                    }
+
+                                    const segDist = Number(seg.distance) || 0;
+                                    const segHours = segDist > 0 ? segDist / 75 : 0;
+                                    const sh = Math.floor(segHours);
+                                    const sm = Math.round((segHours - sh) * 60);
+                                    const segDuration = sh > 0 ? `${sh}h ${sm}m` : `${sm}m`;
+                                    const segToll = segDist >= 15 ? Math.round(segDist * 1.8) : 0;
+                                    const segFuel = Math.round(segDist / 16);
+
+                                    return (
+                                        <div key={idx} className="itinerary-step-card">
+                                            <div className="step-circle-badge">{idx + 1}</div>
+                                            <div className="step-content">
+                                                <div className="step-route-row">
+                                                    <span className="step-route-name">{seg.source} ➔ {seg.destination}</span>
+                                                    <span className="step-dist-val">{seg.distance} km</span>
+                                                </div>
+                                                <span className="step-subtext">{stepDescription}</span>
+                                                <div className="step-metrics-mini-row">
+                                                    <span className="step-mini-tag">⏱️ {segDuration}</span>
+                                                    <span className="step-mini-tag toll">💳 {segToll > 0 ? `₹${segToll}` : "No Toll"}</span>
+                                                    <span className="step-mini-tag">⛽ ~{segFuel} L</span>
+                                                </div>
                                             </div>
-                                            <span className="step-subtext">Leg {idx + 1} Freight Transit</span>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="empty-itinerary-placeholder">
-                                <p>Select hubs and click calculate to view step-by-step corridor metrics.</p>
+                                <p>Select your Start and Destination cities above, then click <strong>"Calculate Route"</strong> to see your step-by-step directions.</p>
                             </div>
                         )}
                     </div>
+
                 </section>
 
                 {/* 3. Right Side: Clean Map Filling 100% of Space without Any Top Banner */}
@@ -410,9 +527,23 @@ function RoutePlanner() {
                             routeSegments={segments}
                             routePathNodes={pathNodes}
                             routePathNames={path}
-                            optimalPathNodes={optimalRoute?.path_nodes || []}
+                            availableRoutes={availableRoutes}
+                            selectedRouteId={selectedRouteId}
                             onSelectCity={handleSelectCityFromMap}
+                            onSelectRouteOption={(routeId) => setSelectedRouteId(routeId)}
+                            onRoutesLoaded={(routes) => {
+                                setAvailableRoutes(routes);
+                                if (routes.length > 0 && !routes.find(r => r.id === selectedRouteId)) {
+                                    setSelectedRouteId(routes[0].id);
+                                }
+                            }}
+                            onHighwaySummary={(summary) => {
+                                if (summary && summary.realDistanceKm) {
+                                    setDistance(summary.realDistanceKm);
+                                }
+                            }}
                         />
+
                     </div>
                 </main>
             </div>

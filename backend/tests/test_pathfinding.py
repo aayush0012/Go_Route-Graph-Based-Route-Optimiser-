@@ -1,5 +1,10 @@
-import pytest
+try:
+    import pytest
+except ImportError:
+    pass
+
 from app.services.pathfinding import haversine_distance, dijkstra, a_star
+
 
 
 def test_haversine_distance():
@@ -40,7 +45,7 @@ def test_a_star_shortest_path():
     assert a_path == [1, 2, 3]
 
 
-def test_min_distance_selection():
+def test_road_distance_prioritization():
     from app.services.route_service import get_effective_road_distance
 
     class DummyRoad:
@@ -54,13 +59,31 @@ def test_min_distance_selection():
         2: (28.5355, 77.3910), # Noida (~20-25 km straight line)
     }
 
-    # Case 1: User distance is larger than coord distance -> min picks coord distance
+    # Case 1: Road has curated distance -> prioritizes actual road distance (e.g. 100 km)
     road1 = DummyRoad(1, 2, 100)
     eff1 = get_effective_road_distance(road1, coords)
-    assert eff1 < 100
-    assert 15 < eff1 < 35
+    assert eff1 == 100.0
 
-    # Case 2: User distance is smaller than coord distance -> min picks user distance
-    road2 = DummyRoad(1, 2, 10)
+    # Case 2: Road has no distance (0 or None) -> falls back to coordinate Haversine distance
+    road2 = DummyRoad(1, 2, 0)
     eff2 = get_effective_road_distance(road2, coords)
-    assert eff2 == 10.0
+    assert 15 < eff2 < 35
+
+
+
+def test_solve_tsp():
+    from app.services.pathfinding import solve_tsp
+
+    graph = {
+        1: [(2, 10), (3, 50)],
+        2: [(1, 10), (3, 20), (4, 40)],
+        3: [(1, 50), (2, 20), (4, 10)],
+        4: [(2, 40), (3, 10)],
+    }
+    # Unoptimized order [3, 2] yields 1->3 (50) + 3->2 (20) + 2->4 (40) = 110
+    # Optimal TSP sequence is [2, 3] yielding 1->2 (10) + 2->3 (20) + 3->4 (10) = 40
+    best_stops, best_dist, full_path = solve_tsp(graph, 1, [3, 2], 4)
+    assert best_stops == [2, 3]
+    assert best_dist == 40
+    assert full_path == [1, 2, 3, 4]
+

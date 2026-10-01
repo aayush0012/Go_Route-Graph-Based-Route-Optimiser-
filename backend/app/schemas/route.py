@@ -7,3 +7,4 @@ class RouteRequest(BaseModel):
     destination_city_id: int
     algorithm: Optional[str] = "dijkstra"
     stops: Optional[List[int]] = []
+    optimize_stops: Optional[bool] = False

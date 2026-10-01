@@ -1,7 +1,7 @@
 /* GoRoute Full-Screen Logistics Workspace */
 .goroute-layout-container {
     display: grid;
-    grid-template-columns: 210px 360px minmax(0, 1fr);
+    grid-template-columns: 420px minmax(0, 1fr);
     gap: 16px;
     padding: 16px 24px;
     width: 100%;
@@ -12,95 +12,7 @@
 }
 
 /* ========================================================
-   1. LEFT SUB-SIDEBAR: CORE OPERATIONS
-   ======================================================== */
-.ops-sidebar {
-    background: #FFFFFF;
-    border: 1px solid #E8ECEF;
-    border-radius: 12px;
-    padding: 18px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    height: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    overflow-y: auto;
-}
-
-.ops-header {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.ops-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #0F172A;
-    letter-spacing: -0.02em;
-    margin: 0;
-}
-
-.ops-subtitle {
-    font-size: 11.5px;
-    color: #64748B;
-    font-weight: 500;
-}
-
-.btn-new-optimization {
-    width: 100%;
-    padding: 10px 14px;
-    background: #0B2E24; /* Dark forest green */
-    color: #FFFFFF;
-    font-size: 13px;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
-    text-align: center;
-}
-
-.btn-new-optimization:hover {
-    background: #061F18;
-    transform: translateY(-1px);
-}
-
-.ops-nav-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 6px;
-}
-
-.ops-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-    text-decoration: none;
-    transition: all 0.15s ease;
-}
-
-.ops-nav-item:hover {
-    background: #F1F5F9;
-    color: #0F172A;
-}
-
-.ops-nav-item.active {
-    background: #4ADE80; /* Mint green */
-    color: #064E3B;
-    font-weight: 700;
-    box-shadow: 0 2px 6px rgba(74, 222, 128, 0.25);
-}
-
-/* ========================================================
-   2. MIDDLE CONFIGURATION & ITINERARY BREAKDOWN PANEL
+   1. LEFT CONFIGURATION & ITINERARY BREAKDOWN PANEL
    ======================================================== */
 .config-itinerary-panel {
     display: flex;
@@ -119,6 +31,35 @@
     border-radius: 12px;
     padding: 18px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.config-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.config-header-row .panel-title {
+    margin: 0;
+}
+
+.btn-reset-light {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-reset-light:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+    border-color: #94A3B8;
 }
 
 .panel-title {
@@ -173,8 +114,8 @@
 }
 
 .styled-select:focus {
-    border-color: #0B2E24;
-    box-shadow: 0 0 0 3px rgba(11, 46, 36, 0.12);
+    border-color: #1D4ED8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
 }
 
 .styled-select.mini {
@@ -280,16 +221,18 @@
     font-size: 13.5px;
     font-weight: 700;
     color: #FFFFFF;
-    background: #0B2E24;
-    border: 1px solid #0B2E24;
+    background: #0F172A;
+    border: 1px solid #0F172A;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(11, 46, 36, 0.2);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
     transition: all 0.15s ease;
 }
 
 .btn-calculate-dark:hover {
-    background: #061F18;
+    background: #1E293B;
+    border-color: #1E293B;
+    transform: translateY(-1px);
 }
 
 .panel-error-alert {
@@ -322,12 +265,12 @@
 }
 
 .metric-pill.highlight {
-    background: #ECFDF5;
-    border-color: #A7F3D0;
+    background: #F8FAFC;
+    border-color: #CBD5E1;
 }
 
 .metric-pill.highlight .metric-val {
-    color: #065F46;
+    color: #0F172A;
 }
 
 .metric-lbl {
@@ -342,12 +285,109 @@
     color: #0F172A;
 }
 
+/* Full Route Journey Overview Banner */
+.trip-overview-banner {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.trip-overview-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trip-path-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.trip-node-step {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.path-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.path-chip.origin,
+.path-chip.destination {
+    border-color: #CBD5E1;
+    background: #0F172A;
+    color: #FFFFFF;
+}
+
+.path-chip.origin .chip-role,
+.path-chip.destination .chip-role {
+    color: #94A3B8;
+}
+
+.path-chip.transit {
+    border-color: #E2E8F0;
+    background: #FFFFFF;
+    color: #0F172A;
+}
+
+.chip-role {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #64748B;
+    white-space: nowrap;
+}
+
+.chip-name {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.path-step-connector {
+    padding-left: 18px;
+    color: #94A3B8;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 2px 0;
+}
+
+.steps-header-lbl {
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 2px;
+}
+
 /* Itinerary Breakdown List */
 .itinerary-cards-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
+
 
 .itinerary-step-card {
     display: flex;
@@ -362,14 +402,14 @@
 }
 
 .itinerary-step-card:hover {
-    border-color: #0B2E24;
+    border-color: #0F172A;
 }
 
 .step-circle-badge {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #0B2E24;
+    background: #0F172A;
     color: #FFFFFF;
     font-size: 11px;
     font-weight: 700;
@@ -403,12 +443,37 @@
 .step-dist-val {
     font-size: 12.5px;
     font-weight: 700;
-    color: #0B2E24;
+    color: #0F172A;
 }
 
 .step-subtext {
     font-size: 11px;
     color: #64748B;
+}
+
+.step-metrics-mini-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.step-mini-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #475569;
+    background: #F1F5F9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.step-mini-tag.toll {
+    color: #B45309;
+    background: #FEF3C7;
+    border-color: #FDE68A;
 }
 
 .empty-itinerary-placeholder {
@@ -439,15 +504,209 @@
     box-sizing: border-box;
 }
 
+.waypoints-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+/* ========================================================
+   INTELLIGENT STOP REORDERING RECOMMENDATION BANNER
+   ======================================================== */
+.reorder-stops-banner {
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.reorder-banner-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.reorder-icon {
+    font-size: 16px;
+    margin-top: 1px;
+}
+
+.reorder-text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.reorder-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.reorder-desc {
+    font-size: 11.5px;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.btn-apply-reorder {
+    width: 100%;
+    padding: 9px 12px;
+    background: #0F172A;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+}
+
+.btn-apply-reorder:hover {
+    background: #1E293B;
+    transform: translateY(-1px);
+}
+
+.reorder-applied-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #1E40AF;
+    animation: fadeIn 0.3s ease;
+}
+
+.reorder-check {
+    font-weight: 800;
+    color: #1D4ED8;
+}
+
+
+/* ========================================================
+   ROUTE STRATEGY DUAL SELECTOR (FASTEST vs CHEAPEST)
+   ======================================================== */
+.route-strategy-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.route-strategy-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748B;
+}
+
+.route-strategy-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.route-strategy-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.route-strategy-card:hover {
+    border-color: #94A3B8;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+}
+
+.route-strategy-card.selected {
+    border-color: #1D4ED8;
+    background: #EFF6FF;
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15), 0 3px 8px rgba(29, 78, 216, 0.08);
+}
+
+.strategy-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.strategy-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    white-space: nowrap;
+}
+
+.route-strategy-card.selected .strategy-title {
+    color: #1D4ED8;
+}
+
+.strategy-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    background: #E2E8F0;
+    color: #334155;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.route-strategy-card.selected .strategy-tag {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.strategy-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.strategy-stat {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
 /* ========================================================
    RESPONSIVE DESIGN
    ======================================================== */
 @media (max-width: 1100px) {
     .goroute-layout-container {
-        grid-template-columns: 340px minmax(0, 1fr);
-    }
-    .ops-sidebar {
-        display: none;
+        grid-template-columns: 380px minmax(0, 1fr);
     }
 }
 
