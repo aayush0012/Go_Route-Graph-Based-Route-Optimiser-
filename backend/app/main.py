@@ -22,7 +22,8 @@ app.add_middleware(
         "http://localhost:3000",           # Alternative dev port
         "https://backend-proj-blue.vercel.app",  # Production frontend (Vercel)
     ],
-    allow_credentials=True,   # Required for cookies to be sent/received
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Matches all Vercel preview & production deployments
+    allow_credentials=True,   # Required for cookies/auth headers
     allow_methods=["*"],
     allow_headers=["*"],
 )
