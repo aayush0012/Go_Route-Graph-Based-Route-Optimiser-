@@ -89,6 +89,26 @@ function RoutePlanner() {
         setTspSavings(null);
     };
 
+    const moveStopUp = (index) => {
+        if (index <= 0) return;
+        const updated = [...stops];
+        const temp = updated[index];
+        updated[index] = updated[index - 1];
+        updated[index - 1] = temp;
+        setStops(updated);
+        setTspSavings(null);
+    };
+
+    const moveStopDown = (index) => {
+        if (index >= stops.length - 1) return;
+        const updated = [...stops];
+        const temp = updated[index];
+        updated[index] = updated[index + 1];
+        updated[index + 1] = temp;
+        setStops(updated);
+        setTspSavings(null);
+    };
+
     const handleStopChange = (index, value) => {
         const updated = [...stops];
         updated[index] = value;
@@ -305,6 +325,7 @@ function RoutePlanner() {
                             <div className="waypoints-subpanel">
                                 <div className="waypoints-header-row">
                                     <span className="waypoints-subhead">Intermediate Stops ({stops.length}):</span>
+                                    <span className="waypoints-subhead-hint">Reorder with ▲/▼</span>
                                 </div>
                                 {stops.map((stopId, index) => (
                                     <div key={index} className="waypoint-item-row">
@@ -321,15 +342,48 @@ function RoutePlanner() {
                                                 </option>
                                             ))}
                                         </select>
-                                        <button
-                                            type="button"
-                                            className="btn-remove-waypoint"
-                                            onClick={() => removeStop(index)}
-                                        >
-                                            ×
-                                        </button>
+                                        <div className="waypoint-row-actions">
+                                            <button
+                                                type="button"
+                                                className="btn-reorder-arrow"
+                                                onClick={() => moveStopUp(index)}
+                                                disabled={index === 0}
+                                                title="Move stop up"
+                                            >
+                                                ▲
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn-reorder-arrow"
+                                                onClick={() => moveStopDown(index)}
+                                                disabled={index === stops.length - 1}
+                                                title="Move stop down"
+                                            >
+                                                ▼
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn-remove-waypoint"
+                                                onClick={() => removeStop(index)}
+                                                title="Remove stop"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
+
+                                {stops.length >= 2 && (
+                                    <button
+                                        type="button"
+                                        className="btn-auto-reorder-stops"
+                                        onClick={() => findRoute(true)}
+                                        disabled={loadingCities || isSearching}
+                                        title="Automatically reorder stops to find the shortest total driving route"
+                                    >
+                                        ⚡ Auto-Reorder Stops (Shortest Path)
+                                    </button>
+                                )}
                             </div>
                         )}
 
