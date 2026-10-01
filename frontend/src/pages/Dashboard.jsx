@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
 import NetworkBackground from "../components/NetworkBackground";
 import "./Dashboard.css";
 
@@ -49,20 +48,18 @@ function Dashboard() {
             {/* Animated Dynamic Graph Background */}
             <NetworkBackground />
 
-            {/* Top Navigation Bar */}
-            <Navbar />
-
             {/* Main Hero & Actions Area */}
             <main className="goroute-hero-container">
                 {/* Hero Header */}
                 <div className="hero-header-block scroll-reveal">
                     <h1 className="hero-title">Orchestrate Your Network</h1>
                     <p className="hero-description">
-                        Plan optimal journeys between cities, reorder multiple stops automatically, and get real-world driving times, FASTag tolls, and fuel estimates instantly.
+                        Build your custom distribution network, connect road corridors, and calculate
+                        the most cost-effective routes in milliseconds.
                     </p>
                 </div>
 
-                {/* 3 Core Action Cards */}
+                {/* 3 Core Architecture Action Cards */}
                 <div className="features-grid-container scroll-reveal">
                     {/* Card 1: Manage Cities */}
                     <div
@@ -90,10 +87,10 @@ function Dashboard() {
                         </div>
                         <h2 className="feature-card-title">Manage Cities</h2>
                         <p className="feature-card-desc">
-                            Register city hubs with GPS coordinates, manage logistics nodes, and explore your spatial network.
+                            Define distribution hubs, pin GPS coordinates, and manage all strategic nodes across your network.
                         </p>
                         <div className="feature-action-link">
-                            <span>Manage Hubs</span>
+                            <span>Explore Nodes</span>
                             <span className="action-arrow">→</span>
                         </div>
                     </div>
@@ -118,10 +115,10 @@ function Dashboard() {
                         </div>
                         <h2 className="feature-card-title">Connect Roads</h2>
                         <p className="feature-card-desc">
-                            Define road connections between cities, configure distances, and set directional pathways.
+                            Establish links between hubs, assign distances & weights, and define custom freight pathways.
                         </p>
                         <div className="feature-action-link">
-                            <span>Connect Corridors</span>
+                            <span>Build Paths</span>
                             <span className="action-arrow">→</span>
                         </div>
                     </div>
@@ -146,23 +143,23 @@ function Dashboard() {
                         </div>
                         <h2 className="feature-card-title">Route Planner</h2>
                         <p className="feature-card-desc">
-                            Calculate the fastest driving routes, reorder multi-stop trips, and view live highway geometry, duration, and toll breakdowns.
+                            Compute guaranteed shortest paths with Dijkstra & A*, view trip costs, and animate freight traversal.
                         </p>
                         <div className="feature-action-link">
-                            <span>Plan Route</span>
+                            <span>Calculate Routes</span>
                             <span className="action-arrow">→</span>
                         </div>
                     </div>
                 </div>
 
                 {/* ========================================================
-                   SECTION 1: KEY CAPABILITIES
+                   SECTION 1: WHY GOROUTE? (Monochrome Editorial Split)
                    ======================================================== */}
                 <section className="editorial-split-section scroll-reveal">
                     <div className="split-left-lead">
                         <h2 className="why-goroute-giant-title">Why GoRoute?</h2>
                         <p className="split-lead-para">
-                            Purpose-built for smart highway navigation, custom logistics networks, and transparent journey economics.
+                            Standard navigation tools only route along generic public roads with standard traffic.
                         </p>
                     </div>
 
@@ -170,9 +167,9 @@ function Dashboard() {
                         <div className="benefit-row">
                             <span className="benefit-num">01</span>
                             <div className="benefit-text">
-                                <h3 className="benefit-heading">Multi-Stop Journey Optimization</h3>
+                                <h3 className="benefit-heading">Custom Private Networks</h3>
                                 <p className="benefit-detail">
-                                    Add multiple waypoints and let the optimization engine automatically reorder your stops into the most efficient sequence, saving kilometers and toll expenses.
+                                    Create custom internal distribution nodes, factory campuses, and toll-restricted freight corridors that standard public map apps cannot model.
                                 </p>
                             </div>
                         </div>
@@ -180,9 +177,9 @@ function Dashboard() {
                         <div className="benefit-row">
                             <span className="benefit-num">02</span>
                             <div className="benefit-text">
-                                <h3 className="benefit-heading">Real Highway Driving Curves & Duration</h3>
+                                <h3 className="benefit-heading">Multi-Stop Waypoints</h3>
                                 <p className="benefit-detail">
-                                    Integrated with TomTom and live road routing to render realistic highway curves, actual speed limits, and traffic-aware travel durations.
+                                    Sequence intermediate stops across national corridors with turn-by-turn distance and leg-by-leg transit breakdowns.
                                 </p>
                             </div>
                         </div>
@@ -190,9 +187,9 @@ function Dashboard() {
                         <div className="benefit-row">
                             <span className="benefit-num">03</span>
                             <div className="benefit-text">
-                                <h3 className="benefit-heading">Accurate FASTag Toll & Fuel Calculations</h3>
+                                <h3 className="benefit-heading">Freight & Fuel Intelligence</h3>
                                 <p className="benefit-detail">
-                                    Get upfront estimates for FASTag toll charges based on standard NHAI highway rates and realistic vehicle fuel consumption before you depart.
+                                    Automatically calculate total distance, travel duration, diesel consumption (~4 km/L), and fleet operational expenditure before dispatch.
                                 </p>
                             </div>
                         </div>
@@ -204,9 +201,9 @@ function Dashboard() {
                    ======================================================== */}
                 <section className="editorial-split-section scroll-reveal">
                     <div className="split-left-lead">
-                        <h2 className="section-heading">How It Works</h2>
+                        <h2 className="section-heading">How GoRoute Works</h2>
                         <p className="split-lead-para">
-                            From registering your network nodes to generating complete turn-by-turn driving itineraries in seconds.
+                            From defining your first distribution hub to dispatching optimized multi-leg itineraries in under a minute.
                         </p>
                     </div>
 
@@ -215,9 +212,9 @@ function Dashboard() {
                             <div className="timeline-item">
                                 <div className="timeline-marker">1</div>
                                 <div className="timeline-content">
-                                    <h3 className="timeline-title">Add Cities & Corridors</h3>
+                                    <h3 className="timeline-title">Add Your Hubs</h3>
                                     <p className="timeline-desc">
-                                        Add cities with automatic GPS lookup and connect them with one-way or two-way road segments.
+                                        Pin warehouses, distribution centers, or cities with automatic GPS coordinates and customizable hub tags.
                                     </p>
                                 </div>
                             </div>
@@ -225,9 +222,9 @@ function Dashboard() {
                             <div className="timeline-item">
                                 <div className="timeline-marker">2</div>
                                 <div className="timeline-content">
-                                    <h3 className="timeline-title">Select Origin, Destination & Stops</h3>
+                                    <h3 className="timeline-title">Connect Road Pathways</h3>
                                     <p className="timeline-desc">
-                                        Choose your starting point, final destination, and any intermediate waypoints you need to visit.
+                                        Define one-way or two-way roads between your hubs and enter the exact road distance in kilometers.
                                     </p>
                                 </div>
                             </div>
@@ -235,9 +232,9 @@ function Dashboard() {
                             <div className="timeline-item">
                                 <div className="timeline-marker">3</div>
                                 <div className="timeline-content">
-                                    <h3 className="timeline-title">View Directions & Interactive Map</h3>
+                                    <h3 className="timeline-title">Calculate & Dispatch</h3>
                                     <p className="timeline-desc">
-                                        Get instant step-by-step directions, distance, travel duration, toll cost, and clickable path details on the interactive map.
+                                        Pick Origin, Destination, and intermediate stops to get instant shortest paths, diesel costs, and live map playback.
                                     </p>
                                 </div>
                             </div>
@@ -246,36 +243,36 @@ function Dashboard() {
                 </section>
 
                 {/* ========================================================
-                   SECTION 3: APPLICATIONS & USE CASES
+                   SECTION 3: REAL-WORLD USE CASES
                    ======================================================== */}
                 <section className="editorial-split-section scroll-reveal">
                     <div className="split-left-lead">
-                        <h2 className="section-heading">Built For Every Journey</h2>
+                        <h2 className="section-heading">Who Uses GoRoute?</h2>
                         <p className="split-lead-para">
-                            Designed for travelers, fleet managers, and logistics planners who need precise highway route insights.
+                            Engineered for organizations that require custom routing logic and granular control over freight logistics.
                         </p>
                     </div>
 
                     <div className="split-right-content">
                         <div className="industry-use-list">
                             <div className="industry-item">
-                                <h3 className="industry-title">Long-Distance Road Trips</h3>
+                                <h3 className="industry-title">E-Commerce & Supply Chains</h3>
                                 <p className="industry-desc">
-                                    Plan multi-city road trips with accurate travel times, realistic highway routes, and upfront toll expense planning.
+                                    Optimize freight corridors connecting national sorting centers (Delhi, Mumbai, Bengaluru) to regional fulfillment hubs.
                                 </p>
                             </div>
 
                             <div className="industry-item">
-                                <h3 className="industry-title">Logistics & Distribution</h3>
+                                <h3 className="industry-title">Industrial & Factory Campuses</h3>
                                 <p className="industry-desc">
-                                    Sequence multiple delivery stops in the optimal order to minimize distance, reduce fuel consumption, and cut costs.
+                                    Map private internal haul roads, mining corridors, and plant delivery gates where public GPS fails.
                                 </p>
                             </div>
 
                             <div className="industry-item">
-                                <h3 className="industry-title">Custom Highway Networks</h3>
+                                <h3 className="industry-title">Fleet Dispatch & Cost Planning</h3>
                                 <p className="industry-desc">
-                                    Model dedicated freight pathways, private transport links, and internal distribution networks easily.
+                                    Pre-calculate diesel consumption (~4 km/L) and freight cost (₹35/km) before vehicles leave the dispatch yard.
                                 </p>
                             </div>
                         </div>
@@ -287,8 +284,8 @@ function Dashboard() {
                    ======================================================== */}
                 <section className="cta-banner-section scroll-reveal">
                     <div className="cta-content">
-                        <h2 className="cta-title">Ready to plan your next journey?</h2>
-                        <p className="cta-desc">Launch the Route Planner and calculate the optimal driving path with full toll and time details.</p>
+                        <h2 className="cta-title">Ready to optimize your logistics routes?</h2>
+                        <p className="cta-desc">Launch the interactive Route Planner and calculate shortest paths across the network.</p>
                         <button
                             type="button"
                             className="btn-launch-cta"
