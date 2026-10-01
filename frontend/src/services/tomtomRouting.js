@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const TOMTOM_API_KEY = import.meta.env.VITE_TOMTOM_API_KEY || "2NVKSlFhz4yR1FFsE1t5DT5U3rNu6i3q";
+const rawKey = (import.meta.env.VITE_TOMTOM_API_KEY || "").trim();
+const TOMTOM_API_KEY = rawKey.startsWith("NVKSlFhz")
+    ? "2" + rawKey
+    : (rawKey.length === 32 ? rawKey : "2NVKSlFhz4yR1FFsE1t5DT5U3rNu6i3q");
 
 /**
  * Calculates fuel liters and FASTag toll cost for a given highway distance
